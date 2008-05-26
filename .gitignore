@@ -1,0 +1,4 @@
+test/vlib.gidl
+test/vlib.h
+test/vlib.so
+test/vlib.vapi

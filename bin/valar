@@ -1,0 +1,77 @@
+require "rexml/document"
+puts "loading #{ARGV[0]}"
+
+doc = REXML::Document.new(File.read(ARGV[0]))
+
+# doc.write( $stdout, 2 )
+# puts
+# puts
+
+def convert_type()
+end
+
+
+objects = []
+
+doc.elements.each("api/object") do |el|
+#   p el
+  puts el.attributes["name"]
+  methods = []
+  el.elements.each("method") do |el2|
+#     p el2
+    methods << { :name => el2.attributes["name"], :symbol => el2.attributes["symbol"]}
+  end
+  objects << { :name => el.attributes["name"], :methods => methods}
+end
+doc.elements.each("api/struct") do |el|
+#   p el
+  puts el.attributes["name"]
+  methods = []
+  el.elements.each("method") do |el2|
+#     p el2
+    params = []
+    el2.elements.each("parameters/parameter") do |p1|
+#      puts "  #{p1.inspect}"
+      params << [convert_type(p1.attributes["type"]), p1.attributes["name"]]
+    end
+    methods << { :name => el2.attributes["name"], :symbol => el2.attributes["symbol"], :params => params}
+  end
+  objects << { :name => el.attributes["name"], :methods => methods}
+end
+
+objects.each do |obj|
+  puts "object: #{obj[:name]}"
+  obj[:methods].each do |meth|
+    print "  #{meth[:symbol]}("
+    print meth[:params].map{|a| a.join " "}.join(", ")
+    puts ")"
+  end
+end
+
+File.open("out.c", "w") do |fout|
+  obj = objects.first
+  objname = obj[:name].downcase
+  fout.puts <<END
+#include "ruby.h"
+#include "#{objname}.h"
+
+static VALUE c#{obj[:name]};
+
+static void rb_#{objname}_destroy(void* #{objname}) {
+  // this needs an unref I think.
+}
+
+static VALUE rb_#{objname}_alloc(VALUE klass) {
+  #{obj[:name]} *#{objname} = #{objname}_new(#{objname}_get_type());
+  VALUE obj;
+  obj = Data_Wrap_Struct(klass, 0, rb_#{objname}_destroy, #{objname});
+  return obj;
+}
+
+END
+  obj[:methods].each do |method|
+    fout.puts <<END
+static VALUE rb_#{method[:symbol]}(#{method[:params].map{|a| a.join " "}.join(", ")})
+END
+  end
+end
