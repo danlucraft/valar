@@ -1,6 +1,6 @@
 
-require 'test/vlib/build_vlib'
-require 'test/vlib/vlib_rb'
+require 'test/build_vlib'
+require 'test/vlib_rb'
 require 'test/unit'
 
 class TestVala < Test::Unit::TestCase

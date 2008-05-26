@@ -2,8 +2,6 @@
 
 #include "vlib.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 
@@ -43,9 +41,50 @@ VALUE vlib_get_str_length (VLib* self, VALUE rb_string) {
 }
 
 
-void vlib_print_string (VLib* self, VALUE rb_string) {
+VALUE vlib_str_length_from_vala (VLib* self, VALUE rb_string) {
+	0;
+	return LONG2FIX (strlen (RSTRING_PTR (rb_string)));
+}
+
+
+void vlib_sum_3 (VLib* self, VALUE rb_a, VALUE rb_b, VALUE rb_c) {
 	g_return_if_fail (self != NULL);
-	fprintf (stdout, "str: %s\n", RSTRING_PTR (rb_string));
+	return;
+}
+
+
+VALUE vlib_get_ary (VLib* self) {
+	0;
+	return rb_ary_new ();
+}
+
+
+VALUE vlib_responds_to_length (VLib* self, VALUE obj) {
+	0;
+	if (rb_respond_to (obj, rb_intern ("length")) == 0) {
+		return Qfalse;
+	}
+	return Qtrue;
+}
+
+
+void vlib_set_foo (VLib* self, VALUE hash) {
+	g_return_if_fail (self != NULL);
+	rb_hash_aset (hash, ((VALUE) rb_str_new2 ("foo")), INT2FIX (123));
+	return;
+}
+
+
+gint vlib_times_2 (VLib* self, gint a) {
+	g_return_val_if_fail (self != NULL, 0);
+	return a * 2;
+}
+
+
+glong vlib_vala_length (VLib* self, const char* str) {
+	g_return_val_if_fail (self != NULL, 0L);
+	g_return_val_if_fail (str != NULL, 0L);
+	return strlen (str);
 }
 
 
