@@ -2,3 +2,10 @@ test/vlib.gidl
 test/vlib.h
 test/vlib.so
 test/vlib.vapi
+test/vlib.o
+test/vlibrb.so
+test/Makefile
+test/mkmf.log
+test/vlib_rb.c
+test/vlib_rb.o
+test/vlib_rb.so

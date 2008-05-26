@@ -2,7 +2,7 @@
 require 'mkmf-gnome2'
 
 # Give it a name
-extension_name = 'vlibrb'
+extension_name = 'vlib_rb'
 PKGConfig.have_package('gtk+-2.0')
 # The destination
 dir_config(extension_name)

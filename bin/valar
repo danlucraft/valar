@@ -7,7 +7,12 @@ doc = REXML::Document.new(File.read(ARGV[0]))
 # puts
 # puts
 
-def convert_type()
+def convert_type(type)
+  if %w{Ruby.String Ruby.Array Ruby.Value}.include? type
+    "VALUE"
+  else
+    type
+  end
 end
 
 
@@ -30,11 +35,18 @@ doc.elements.each("api/struct") do |el|
   el.elements.each("method") do |el2|
 #     p el2
     params = []
+    return_type = nil
+    el2.elements.each("return-type") {|rt| return_type = rt.attributes["type"]}
     el2.elements.each("parameters/parameter") do |p1|
 #      puts "  #{p1.inspect}"
       params << [convert_type(p1.attributes["type"]), p1.attributes["name"]]
     end
-    methods << { :name => el2.attributes["name"], :symbol => el2.attributes["symbol"], :params => params}
+    methods << { 
+      :name => el2.attributes["name"], 
+      :symbol => el2.attributes["symbol"], 
+      :params => params,
+      :return_type => convert_type(return_type)
+    }
   end
   objects << { :name => el.attributes["name"], :methods => methods}
 end
@@ -42,15 +54,15 @@ end
 objects.each do |obj|
   puts "object: #{obj[:name]}"
   obj[:methods].each do |meth|
-    print "  #{meth[:symbol]}("
+    print "  #{meth[:return_type].ljust(12)} #{meth[:symbol].ljust(22)}("
     print meth[:params].map{|a| a.join " "}.join(", ")
     puts ")"
   end
 end
 
-File.open("out.c", "w") do |fout|
-  obj = objects.first
-  objname = obj[:name].downcase
+obj = objects.first
+objname = obj[:name].downcase
+File.open(File.dirname(ARGV[0])+"/#{objname}_rb.c", "w") do |fout|
   fout.puts <<END
 #include "ruby.h"
 #include "#{objname}.h"
@@ -58,20 +70,49 @@ File.open("out.c", "w") do |fout|
 static VALUE c#{obj[:name]};
 
 static void rb_#{objname}_destroy(void* #{objname}) {
-  // this needs an unref I think.
+    // this needs an unref I think.
 }
 
 static VALUE rb_#{objname}_alloc(VALUE klass) {
-  #{obj[:name]} *#{objname} = #{objname}_new(#{objname}_get_type());
-  VALUE obj;
-  obj = Data_Wrap_Struct(klass, 0, rb_#{objname}_destroy, #{objname});
-  return obj;
+    #{obj[:name]} *#{objname} = #{objname}_new(#{objname}_get_type());
+    VALUE obj;
+    obj = Data_Wrap_Struct(klass, 0, rb_#{objname}_destroy, #{objname});
+    return obj;
 }
 
 END
   obj[:methods].each do |method|
     fout.puts <<END
-static VALUE rb_#{method[:symbol]}(#{method[:params].map{|a| a.join " "}.join(", ")})
+static VALUE rb_#{method[:symbol]}(#{method[:params].map{|a| a.join " "}.join(", ")}) {
+    #{obj[:name]} *#{objname};
+    Data_Get_Struct(self, #{obj[:name]}, #{objname});
+END
+    if method[:return_type] == "VALUE"
+      fout.puts <<END
+    return #{method[:symbol]}(vlib#{method[:params].length > 1 ? ", " : ""}#{method[:params][1..-1].map{|a| a[1]}.join(", ")});
+}
+
+END
+    elsif method[:return_type] == "void"
+      fout.puts <<END
+    #{method[:symbol]}(vlib#{method[:params].length > 1 ? ", " : ""}#{method[:params][1..-1].map{|a| a[1]}.join(", ")});
+    return Qnil;
+}
+
+END
+    end
+  end
+  
+  fout.puts <<END
+void Init_#{objname}_rb() {
+    g_type_init();
+    c#{obj[:name]} = rb_define_class("#{obj[:name]}", rb_cObject);
+    rb_define_alloc_func(c#{obj[:name]}, rb_#{objname}_alloc);
+END
+  obj[:methods].each do |method|
+    fout.puts <<END
+    rb_define_method(c#{obj[:name]}, "#{method[:name]}", rb_#{method[:symbol]}, #{method[:params].length-1});
 END
   end
+  fout.puts "}\n"
 end
