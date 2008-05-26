@@ -4,16 +4,18 @@
 
 == DESCRIPTION:
 
-Includes a VAPI file for calling the Ruby API from Vala, and a 
+Includes a VAPI file for calling the Ruby C API from Vala, and a 
 code generator valar to introspect on a Vala library and automatically
 generate bindings for Ruby.
 
 Other features:
 
  * automated conversions between Vala and Ruby types
- * object oriented Ruby API. Instead of VALUE, VALUE, VALUE, you can
-   write Ruby.Value, Ruby.Array, Ruby.String and enjoy automated type
-   checking to rule out segfaults.
+ * An object oriented Ruby API. Instead of RSTRING_PTR(str), 
+   you write str.to_c()
+ * Ruby types. So instead of VALUE, VALUE, VALUE, you 
+   write Ruby.Value, Ruby.Array, Ruby.String and enjoy automatically
+   generated type checking to rule out segfaults.
 
 == REQUIREMENTS:
 
