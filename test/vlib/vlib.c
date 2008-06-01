@@ -88,6 +88,11 @@ glong vlib_vala_length (VLib* self, const char* str) {
 }
 
 
+gint vlib_add1 (gint a, gint b) {
+	return a + b;
+}
+
+
 /*   valac -C --library vlib vlib.vala --basedir ./*/
 VLib* vlib_new (GType type) {
 	VLib* self;

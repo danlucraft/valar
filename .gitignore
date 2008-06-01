@@ -1,5 +1,6 @@
 test/vlib/vlib.gidl
 test/vlib/vlib.h
+test/vlib/vlib.c
 test/vlib/vlib.so
 test/vlib/vlib.vapi
 test/vlib/vlib.o
@@ -9,3 +10,15 @@ test/vlib/mkmf.log
 test/vlib/vlib_rb.c
 test/vlib/vlib_rb.o
 test/vlib/vlib_rb.so
+test/nested/nested.gidl
+test/nested/nested.h
+test/nested/nested.c
+test/nested/nested.so
+test/nested/nested.vapi
+test/nested/nested.o
+test/nested/nestedrb.so
+test/nested/Makefile
+test/nested/mkmf.log
+test/nested/nested_rb.c
+test/nested/nested_rb.o
+test/nested/nested_rb.so

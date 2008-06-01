@@ -53,5 +53,9 @@ public class VLib {
 	public long vala_length(string str) {
 		return str.size();
 	}
+
+	public static int add1(int a, int b) {
+		return a + b;
+	}
 }
 

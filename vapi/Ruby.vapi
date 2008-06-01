@@ -91,7 +91,7 @@ namespace Ruby {
 	}
 
 	[CCode (cname = "rb_cObject")]
-	public const Value Object;
+	public const Value GlobalObject;
 	[CCode (cname = "Qnil")]
 	public const Value Nil;
 	[CCode (cname = "Qtrue")]
