@@ -51,34 +51,63 @@ class Valar
       obj
     end
     
+    def alloc_function
+      f=<<END
+static VALUE rb_#{underscore_typename}_alloc(VALUE klass) {
+END
+      if sup_class == "GLib.Object"
+        f+= <<END
+    #{c_typename} *#{underscore_typename} = #{underscore_typename}_new();
+END
+      else
+        f+= <<END
+    #{c_typename} *#{underscore_typename} = #{underscore_typename}_new(#{underscore_typename}_get_type());
+END
+      end
+      f+= <<END
+    VALUE obj;
+    obj = Data_Wrap_Struct(klass, 0, rb_#{underscore_typename}_destroy, #{underscore_typename});
+END
+      if sup_class == "GLib.Object"
+        f+=<<END
+    g_object_ref(#{underscore_typename});
+END
+      else
+        f+=<<END
+    #{underscore_typename}_ref(#{underscore_typename});
+END
+      end
+      f+=<<END
+    return obj;
+}
+
+END
+      f
+    end
+    
+    def destroy_function
+      if sup_class == "GLib.Object"
+        <<END
+static void rb_#{underscore_typename}_destroy(void* #{underscore_typename}) {
+    g_object_unref(#{underscore_typename});
+}
+END
+      else
+        <<END
+static void rb_#{underscore_typename}_destroy(void* #{underscore_typename}) {
+    #{underscore_typename}_unref(#{underscore_typename});
+}
+END
+      end
+    end
+    
     def output(fout)
       fout.puts <<END
 static VALUE rbc_#{underscore_typename};
 END
       unless abstract
-        fout.puts <<END
-static void rb_#{underscore_typename}_destroy(void* #{c_typename}) {
-    // this needs an unref I think.
-}
-
-static VALUE rb_#{underscore_typename}_alloc(VALUE klass) {
-END
-        if sup_class
-          fout.puts <<END
-    #{c_typename} *#{underscore_typename} = #{underscore_typename}_new();
-END
-        else
-          fout.puts <<END
-    #{c_typename} *#{underscore_typename} = #{underscore_typename}_new(#{underscore_typename}_get_type());
-END
-        end
-        fout.puts <<END
-    VALUE obj;
-    obj = Data_Wrap_Struct(klass, 0, rb_#{underscore_typename}_destroy, #{underscore_typename});
-    return obj;
-}
-
-END
+        fout.puts(destroy_function)
+        fout.puts(alloc_function)
         functions.each do |method|
           method.output(fout) if method.convertible?
         end

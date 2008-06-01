@@ -18,6 +18,10 @@ namespace Nested {
 
 	public class Baz {
 		public int times(int a, int b) {
+			// implicit:
+			Nested.Foo foo = new Nested.Foo();
+			// Gobject:
+			Nested.Bar bar = new Nested.Bar();
 			return a*b;
 		}
 		public class Qux {
