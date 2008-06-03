@@ -1,0 +1,5 @@
+
+
+ o Nullable types.
+ o Recognize types that are defined within the library itself.
+ o Convert properties appropriately.

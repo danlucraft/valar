@@ -80,6 +80,9 @@ class Valar
           current_obj.functions << new_meth
         when /^\s*\}$/
           current_obj = current_obj.outer_object
+        when /\}/
+          puts "error unknown scope opening: '#{line.chomp}'"
+          raise
         end
       end
       lib
