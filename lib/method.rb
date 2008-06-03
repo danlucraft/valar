@@ -1,9 +1,13 @@
 class Valar
   class ValaMethod
-    attr_accessor :name, :params, :returns, :obj, :static
+    attr_accessor :name, :ruby_name, :params, :returns, :obj, :static
     
     def initialize
       @params = []
+    end
+    
+    def ruby_name
+      @ruby_name || @name
     end
     
     def output(out)
@@ -41,25 +45,49 @@ END
     def type_checks
       str = ""
       params.each do |param|
-        next unless RUBY_TYPES.include? param[0].name
-        ctype, msg = TYPE_CHECK[param[0].name]
+        if VALA_TO_RUBY.include? param[0].name
+          type_name = VALA_TO_RUBY[param[0].name]
+        else
+          type_name = param[0].name
+        end
+        ctype, msg = TYPE_CHECK[type_name]
         if ctype
-          str << f=<<END
+          if param[0].nullable?
+            str << f=<<END
+    if (TYPE(#{param[1]}) != #{ctype} && #{param[1]} != Qnil) {
+        VALUE rb_arg_error = rb_eval_string("ArgumentError");
+        rb_raise(rb_arg_error, "#{msg} or nil");
+    }
+END
+          else
+            str << f=<<END
     if (TYPE(#{param[1]}) != #{ctype}) {
         VALUE rb_arg_error = rb_eval_string("ArgumentError");
         rb_raise(rb_arg_error, "#{msg}");
     }
 END
+          end
         end
-        ctypes, msg = COMPOSITE_TYPE_CHECK[param[0].name]
+        ctypes, msg = COMPOSITE_TYPE_CHECK[type_name]
         if ctypes
-          condition = ctypes.map {|ctype| "TYPE(#{param[1]}) != #{ctype}"}.join(" && ")
-          str << f=<<END
+          if param[0].nullable?
+            condition = ctypes.map {|ctype| "TYPE(#{param[1]}) != #{ctype}"}.join(" && ")
+            condition += " && #{param[1]} != Qnil"
+            str << f=<<END
+    if (#{condition}) {
+        VALUE rb_arg_error = rb_eval_string("ArgumentError");
+        rb_raise(rb_arg_error, "#{msg} or nil");
+    }
+END
+          else
+            condition = ctypes.map {|ctype| "TYPE(#{param[1]}) != #{ctype}"}.join(" && ")
+            str << f=<<END
     if (#{condition}) {
         VALUE rb_arg_error = rb_eval_string("ArgumentError");
         rb_raise(rb_arg_error, "#{msg}");
     }
 END
+          end
         end
       end
       str

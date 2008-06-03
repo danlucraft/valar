@@ -6,7 +6,7 @@ require 'type'
 
 class Valar
   VERSION = '1.0.0'
-  RUBY_TYPES = %w{Ruby.String Ruby.Array Ruby.Value Ruby.Int Ruby.Number Ruby.Float Ruby.Hash}
+  
   TYPE_CHECK = {
     "Ruby.Array" => ["T_ARRAY", "expected an Array"],
     "Ruby.String" => ["T_STRING", "expected a String"],
@@ -19,12 +19,15 @@ class Valar
     "Ruby.Symbol" => ["T_SYMBOL", "expected a Symbol"],
     "Ruby.Float" => ["T_FLOAT", "expected a Float"]
   }
+  
   COMPOSITE_TYPE_CHECK = {
     "Ruby.Bool" => [["T_TRUE", "T_FALSE"], "expected true or false"],
     "Ruby.Int" => [["T_BIGNUM", "T_FIXNUM"], "expected an integer"],
     "Ruby.Number" => [["T_BIGNUM", "T_FIXNUM", "T_FLOAT"], "expected a number"],
   }
   
+  RUBY_TYPES = TYPE_CHECK.keys + COMPOSITE_TYPE_CHECK.keys + %w(Ruby.Value)
+
   TYPE_MAP = {
     'char'          => [ 'NUM2CHR',  'CHR2FIX' ],
     'char *'        => [ 'STR2CSTR', 'rb_str_new2' ],
@@ -48,6 +51,13 @@ class Valar
     "long" => "long",
     "double" => "double",
     "string" => "char*"
+  }
+  
+  VALA_TO_RUBY = {
+    "int" => "Ruby.Int",
+    "long" => "Ruby.Int",
+    "double" => "Ruby.Float",
+    "string" => "Ruby.String"
   }
   
   def self.ruby2c(type)

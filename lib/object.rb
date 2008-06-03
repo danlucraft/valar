@@ -1,9 +1,9 @@
 class Valar
   class ValaObject
-    attr_accessor :name, :functions, :outer_object, :abstract, :objects, :sup_class
+    attr_accessor :name, :functions, :outer_object, :abstract, :objects, :sup_class, :properties
     
     def initialize
-      @functions, @objects = [], []
+      @functions, @objects, @properties = [], [], []
     end
     
     def object(name)
@@ -111,6 +111,9 @@ END
         functions.each do |method|
           method.output(fout) if method.convertible?
         end
+        properties.each do |prop|
+          prop.output(fout) if prop.convertible?
+        end
       end
     end
     
@@ -133,11 +136,11 @@ END
         if method.convertible?
           if method.static
             fout.puts <<END
-    rb_define_singleton_method(rbc_#{underscore_typename}, "#{method.name}", rb_#{underscore_typename}_#{method.name.downcase}, #{method.params.length});
+    rb_define_singleton_method(rbc_#{underscore_typename}, "#{method.ruby_name}", rb_#{underscore_typename}_#{method.name.downcase}, #{method.params.length});
 END
           else
             fout.puts <<END
-    rb_define_method(rbc_#{underscore_typename}, "#{method.name}", rb_#{underscore_typename}_#{method.name.downcase}, #{method.params.length});
+    rb_define_method(rbc_#{underscore_typename}, "#{method.ruby_name}", rb_#{underscore_typename}_#{method.name.downcase}, #{method.params.length});
 END
           end
         end

@@ -79,6 +79,20 @@ class Valar
           end
           new_meth.obj = current_obj
           current_obj.functions << new_meth
+        when /public (\w+ )*([\w\.\?]+) (\w+) \{(.*)\}/
+          get_meth = ValaMethod.new
+          get_meth.name = "get_#{$3}"
+          get_meth.ruby_name = $3
+          get_meth.returns = ValaType.parse($2)
+          get_meth.obj = current_obj
+          current_obj.functions << get_meth
+          set_meth = ValaMethod.new
+          set_meth.name = "set_#{$3}"
+          set_meth.ruby_name = "#{$3}="
+          set_meth.returns = ValaType.parse("void")
+          set_meth.obj = current_obj
+          set_meth.params << [ValaType.parse($2), "val"]
+          current_obj.functions << set_meth
         when /^\s*\}$/
           current_obj = current_obj.outer_object
         when /\}/
@@ -95,6 +109,10 @@ class Valar
         obj.functions.sort_by{|m| m.name}.each do |meth|
           puts "  #{meth.convertible? ? "*" : "x"} #{meth.returns.name.ljust(12)} #{meth.name.ljust(30)}(#{meth.params.map{|a| "#{a[0].name} #{a[1]}"}.join ", "})"
         end
+#         puts "  ---properties---"
+#         obj.properties.sort_by{|m| m.name}.each do |prop|
+#           puts "  * #{prop.type.name.ljust(12)} #{prop.name}"
+#         end
       end
     end
     

@@ -69,5 +69,18 @@ class TestVala < Test::Unit::TestCase
   def test_nullable_arguments
     assert_equal 0, VLib.maybe_length(nil)
     assert_equal 5, VLib.maybe_length("adama")
+    assert_raises(ArgumentError) {
+      VLib.maybe_length(19)
+    }
+  end
+  
+  def test_simple_property
+    vl = VLib.new
+    vl.anint = 10
+    assert_equal 10, vl.anint
+
+    assert_raises(ArgumentError) {
+      vl.anint = 10.9
+    }
   end
 end

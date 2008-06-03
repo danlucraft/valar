@@ -71,5 +71,7 @@ public class VLib {
 		else
 			return a.len();
 	}
+
+	public int anint { get; set; }
 }
 
