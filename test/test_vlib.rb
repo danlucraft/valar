@@ -57,6 +57,10 @@ class TestVala < Test::Unit::TestCase
     assert_equal 7, VLib.new.vala_length("asdf123")
   end
   
+  def test_static_methods
+    assert_equal 7, VLib.add1(3, 4)
+  end
+  
   def test_nullable_types
     assert_equal "adama", VLib.maybe_string(100)
     assert_equal nil, VLib.maybe_string(1)

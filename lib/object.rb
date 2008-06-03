@@ -131,9 +131,15 @@ END
       end
       functions.each do |method|
         if method.convertible?
-          fout.puts <<END
+          if method.static
+            fout.puts <<END
+    rb_define_singleton_method(rbc_#{underscore_typename}, "#{method.name}", rb_#{underscore_typename}_#{method.name.downcase}, #{method.params.length});
+END
+          else
+            fout.puts <<END
     rb_define_method(rbc_#{underscore_typename}, "#{method.name}", rb_#{underscore_typename}_#{method.name.downcase}, #{method.params.length});
 END
+          end
         end
       end      
     end

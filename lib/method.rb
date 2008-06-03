@@ -25,11 +25,17 @@ END
     end
     
     def header
-      f=<<END
+      if static
+        f=<<END
+static VALUE rb_#{obj.underscore_typename}_#{name.downcase}(VALUE self#{params.length > 0 ? ", " : nil}#{rb_arg_list}) {
+END
+      else
+        f=<<END
 static VALUE rb_#{obj.underscore_typename}_#{name.downcase}(VALUE self#{params.length > 0 ? ", " : nil}#{rb_arg_list}) {
     #{obj.c_typename} *#{obj.underscore_typename};
     Data_Get_Struct(self, #{obj.c_typename}, #{obj.underscore_typename});
 END
+      end
     end
     
     def type_checks
@@ -78,9 +84,19 @@ END
     VALUE _rb_return = Qnil;
 END
       elsif ctype = VALA_TO_C[returns.name]
-        f=<<END
+        if returns.nullable?
+          f=<<END
+     VALUE _rb_return;
+    if (_c_return == NULL)
+        _rb_return = Qnil;
+    else
+        _rb_return = #{Valar.c2ruby(ctype)}(_c_return);
+END
+        else
+          f=<<END
     VALUE _rb_return = #{Valar.c2ruby(ctype)}(_c_return);
 END
+        end
       else
         ""
       end
