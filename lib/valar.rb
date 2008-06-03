@@ -2,6 +2,7 @@ $: << File.dirname(__FILE__)
 require 'library'
 require 'object'
 require 'method'
+require 'type'
 
 class Valar
   VERSION = '1.0.0'
@@ -59,16 +60,8 @@ class Valar
     TYPE_MAP[type].last
   end
 
-  def self.vala_type(type)
-    if RUBY_TYPES.include? type
-      "VALUE"
-    else
-      type
-    end
-  end
-
   def self.convertible_type?(type)
-    VALA_TO_C.include? type or RUBY_TYPES.include? type
+    VALA_TO_C.include? type.name or RUBY_TYPES.include? type.name
   end
   
   def self.vala2c(type)
@@ -93,5 +86,4 @@ class Valar
     puts "loading #{ARGV[0]}"
     @library = ValaLibrary.new_from_vapi(filename)
   end
-  
 end

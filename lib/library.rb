@@ -64,16 +64,17 @@ class Valar
           current_obj.objects << new_obj if current_obj
           current_obj = new_obj
           lib.objects << new_obj
-        when /public (\w+ )*([\w\.]+) (\w+) \((.*)\);/
+        when /public (\w+ )*([\w\.\?]+) (\w+) \((.*)\);/
           params = $4
           keywords = $1
           new_meth = ValaMethod.new
           new_meth.name = $3
-          new_meth.returns = $2
+          new_meth.returns = ValaType.parse($2)
           new_meth.static = (keywords and keywords.include?("static"))
           if params
             params.split(", ").each do |param_str|
-              new_meth.params << param_str.split(" ")
+              type_def, arg_name = param_str.split(" ")
+              new_meth.params << [ValaType.parse(type_def), arg_name]
             end
           end
           new_meth.obj = current_obj
@@ -91,8 +92,8 @@ class Valar
     def print
       @objects.each do |obj|
         puts "#{obj.vala_typename}"
-        obj.functions.each do |meth|
-          puts "  #{meth.returns.ljust(12)} #{meth.name.ljust(30)}(#{meth.params.map{|a| a.join " "}.join ", "})"
+        obj.functions.sort_by{|m| m.name}.each do |meth|
+          puts "  #{meth.convertible? ? "*" : "x"} #{meth.returns.name.ljust(12)} #{meth.name.ljust(30)}(#{meth.params.map{|a| "#{a[0].name} #{a[1]}"}.join ", "})"
         end
       end
     end

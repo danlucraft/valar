@@ -57,5 +57,12 @@ public class VLib {
 	public static int add1(int a, int b) {
 		return a + b;
 	}
+
+	public static string? maybe_string(int a) {
+		if (a > 10)
+			return "adama";
+		else
+			return null;
+	}
 }
 

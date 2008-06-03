@@ -13,7 +13,7 @@ class TestVapiParser < Test::Unit::TestCase
     assert(nested.functions.empty?)
     assert(foo=nested.object("Foo"))
     assert(adama=foo.method(:adama))
-    assert_equal "string", adama.returns
+    assert_equal Valar::ValaType.parse("string"), adama.returns
     assert_equal [], adama.params
   end
 end

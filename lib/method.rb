@@ -35,8 +35,8 @@ END
     def type_checks
       str = ""
       params.each do |param|
-        next unless RUBY_TYPES.include? param[0]
-        ctype, msg = TYPE_CHECK[param[0]]
+        next unless RUBY_TYPES.include? param[0].name
+        ctype, msg = TYPE_CHECK[param[0].name]
         if ctype
           str << f=<<END
     if (TYPE(#{param[1]}) != #{ctype}) {
@@ -45,7 +45,7 @@ END
     }
 END
         end
-        ctypes, msg = COMPOSITE_TYPE_CHECK[param[0]]
+        ctypes, msg = COMPOSITE_TYPE_CHECK[param[0].name]
         if ctypes
           condition = ctypes.map {|ctype| "TYPE(#{param[1]}) != #{ctype}"}.join(" && ")
           str << f=<<END
@@ -62,10 +62,10 @@ END
     def argument_type_conversions
       str = ""
       params.each do |param|
-        next if RUBY_TYPES.include? param[0]
-        if ctype = VALA_TO_C[param[0]]
+        next if RUBY_TYPES.include? param[0].name
+        if ctype = VALA_TO_C[param[0].name]
           str << f=<<END
-    #{Valar.vala2c(param[0])} _c_#{param[1]} = #{Valar.ruby2c(ctype)}(#{param[1]});
+    #{Valar.vala2c(param[0].name)} _c_#{param[1]} = #{Valar.ruby2c(ctype)}(#{param[1]});
 END
         end
       end
@@ -73,11 +73,11 @@ END
     end
     
     def return_type_conversion
-      if returns == "void"
+      if returns.name == "void"
         f=<<END
     VALUE _rb_return = Qnil;
 END
-      elsif ctype = VALA_TO_C[returns]
+      elsif ctype = VALA_TO_C[returns.name]
         f=<<END
     VALUE _rb_return = #{Valar.c2ruby(ctype)}(_c_return);
 END
@@ -87,17 +87,17 @@ END
     end
     
     def body
-      if RUBY_TYPES.include? returns
+      if RUBY_TYPES.include? returns.name
         f=<<END
     VALUE _rb_return = #{obj.underscore_typename}_#{name}(#{c_arg_list});
 END
-      elsif returns == "void"
+      elsif returns.name == "void"
         f=<<END
     #{obj.underscore_typename}_#{name}(#{c_arg_list});
 END
       else
         f=<<END
-    #{Valar.vala2c(returns)} _c_return;
+    #{Valar.vala2c(returns.name)} _c_return;
     _c_return = #{obj.underscore_typename}_#{name}(#{c_arg_list});
 END
         
@@ -117,12 +117,12 @@ END
           str += ", "
         end
       end
-      str += @params.map {|a| RUBY_TYPES.include?(a[0]) ? a[1] : "_c_"+a[1]}.join(", ")
+      str += @params.map {|a| RUBY_TYPES.include?(a[0].name) ? a[1] : "_c_"+a[1]}.join(", ")
       str
     end
     
     def ctype?(type)
-      TYPE_MAP.include? type
+      TYPE_MAP.include? type.name
     end
     
     def self.new_from_xml(el)

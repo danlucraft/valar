@@ -93,6 +93,15 @@ gint vlib_add1 (gint a, gint b) {
 }
 
 
+char* vlib_maybe_string (gint a) {
+	if (a > 10) {
+		return g_strdup ("adama");
+	} else {
+		return NULL;
+	}
+}
+
+
 /*   valac -C --library vlib vlib.vala --basedir ./*/
 VLib* vlib_new (GType type) {
 	VLib* self;
