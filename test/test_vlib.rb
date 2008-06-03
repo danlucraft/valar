@@ -61,8 +61,13 @@ class TestVala < Test::Unit::TestCase
     assert_equal 7, VLib.add1(3, 4)
   end
   
-  def test_nullable_types
+  def test_nullable_return_values
     assert_equal "adama", VLib.maybe_string(100)
     assert_equal nil, VLib.maybe_string(1)
+  end
+  
+  def test_nullable_arguments
+    assert_equal 0, VLib.maybe_length(nil)
+    assert_equal 5, VLib.maybe_length("adama")
   end
 end

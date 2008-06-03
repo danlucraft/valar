@@ -64,5 +64,12 @@ public class VLib {
 		else
 			return null;
 	}
+
+	public static long maybe_length(string? a) {
+		if (a == null)
+			return 0;
+		else
+			return a.len();
+	}
 }
 

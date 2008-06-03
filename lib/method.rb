@@ -70,9 +70,19 @@ END
       params.each do |param|
         next if RUBY_TYPES.include? param[0].name
         if ctype = VALA_TO_C[param[0].name]
-          str << f=<<END
+          if param[0].nullable?
+            str << f=<<END
+    #{Valar.vala2c(param[0].name)} _c_#{param[1]};
+    if (#{param[1]} == Qnil)
+        _c_#{param[1]} = NULL;
+    else
+        _c_#{param[1]} = #{Valar.ruby2c(ctype)}(#{param[1]});
+END
+          else
+            str << f=<<END
     #{Valar.vala2c(param[0].name)} _c_#{param[1]} = #{Valar.ruby2c(ctype)}(#{param[1]});
 END
+          end
         end
       end
       str

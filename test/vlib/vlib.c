@@ -102,6 +102,15 @@ char* vlib_maybe_string (gint a) {
 }
 
 
+glong vlib_maybe_length (const char* a) {
+	if (a == NULL) {
+		return ((glong) 0);
+	} else {
+		return g_utf8_strlen (a, -1);
+	}
+}
+
+
 /*   valac -C --library vlib vlib.vala --basedir ./*/
 VLib* vlib_new (GType type) {
 	VLib* self;
