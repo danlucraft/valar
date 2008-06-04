@@ -1,5 +1,6 @@
 
 
+ o Convert Structs.
  x Recognize types that are defined within the library itself.
  o Convert properties appropriately.
  x Nullable types.
