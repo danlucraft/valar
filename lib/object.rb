@@ -103,17 +103,17 @@ END
     
     def output(fout)
       fout.puts <<END
+
+/****  #{vala_typename} wrapper *****/
+
 static VALUE rbc_#{underscore_typename};
 END
       unless abstract
         fout.puts(destroy_function)
         fout.puts(alloc_function)
-        functions.each do |method|
-          method.output(fout) if method.convertible?
-        end
-        properties.each do |prop|
-          prop.output(fout) if prop.convertible?
-        end
+      end
+      functions.each do |method|
+        method.output(fout) if method.convertible?
       end
     end
     

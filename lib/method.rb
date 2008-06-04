@@ -111,6 +111,22 @@ END
     #{Valar.vala2c(param[0].name)} _c_#{param[1]} = #{Valar.ruby2c(ctype)}(#{param[1]});
 END
           end
+        elsif obj_arg = Valar.defined_object?(param[0].name)
+          if param[0].nullable?
+            str << f=<<END
+    #{obj_arg.c_typename}* _c_#{param[1]};
+    if (#{param[1]} == Qnil)
+        _c_#{param[1]} = NULL;
+    else {
+        Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
+    }
+END
+          else
+            str << f=<<END
+    #{obj_arg.c_typename}* _c_#{param[1]};
+    Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
+END
+          end
         end
       end
       str

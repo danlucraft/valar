@@ -30,4 +30,13 @@ namespace Nested {
 			}
 		}
 	}
+
+	public static string foo_user(Foo f) {
+		return f.adama();
+	}
+
+	public static int bar_user(Nested.Bar b) {
+		return b.seven();
+	}
+
 }

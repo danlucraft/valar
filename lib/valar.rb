@@ -71,7 +71,21 @@ class Valar
   end
 
   def self.convertible_type?(type)
-    VALA_TO_C.include? type.name or RUBY_TYPES.include? type.name
+    VALA_TO_C.include? type.name or 
+      RUBY_TYPES.include? type.name or
+      defined_objects.find{ |o| o.vala_typename == type.name}
+  end
+  
+  def self.defined_object?(name)
+    defined_objects.find{ |o| o.vala_typename == name}
+  end
+  
+  def self.defined_objects
+    objs = []
+    ObjectSpace.each_object(Valar::ValaLibrary) do |library|
+      objs += library.objects
+    end
+    objs
   end
   
   def self.vala2c(type)
