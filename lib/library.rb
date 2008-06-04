@@ -123,8 +123,11 @@ class Valar
 #include "#{@name}.h"
 END
         @objects.each do |obj|
+          obj.output_class_definition(fout)
+        end
+        @objects.each do |obj|
           puts "outputting: #{obj.name}"
-          obj.output(fout)
+          obj.output_method_definition(fout)
         end 
         
         fout.puts <<END

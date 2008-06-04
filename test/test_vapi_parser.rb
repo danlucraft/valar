@@ -10,7 +10,6 @@ class TestVapiParser < Test::Unit::TestCase
     lib = Valar.parse_vapi_file("test/nested/nested.vapi")
     assert_equal %w(Bar Baz Foo Nested Qux), lib.object_names
     assert(nested=lib.object("Nested"))
-    assert(nested.functions.empty?)
     assert(foo=nested.object("Foo"))
     assert(adama=foo.method(:adama))
     assert_equal Valar::ValaType.parse("string"), adama.returns

@@ -39,4 +39,7 @@ namespace Nested {
 		return b.seven();
 	}
 
+	public static Baz.Qux qux_returner() {
+		return new Baz.Qux();
+	}
 }

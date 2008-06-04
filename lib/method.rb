@@ -151,6 +151,22 @@ END
     VALUE _rb_return = #{Valar.c2ruby(ctype)}(_c_return);
 END
         end
+      elsif obj_arg = Valar.defined_object?(returns.name)
+        if returns.nullable?
+          f=<<END
+    VALUE _rb_return;
+    if (_c_return == NULL) {
+        _rb_return = Qnil;
+    }
+    else {
+        _rb_return = Data_Wrap_Struct(rbc_#{obj_arg.underscore_typename}, 0, rb_#{obj_arg.underscore_typename}_destroy, _c_return);
+    }
+END
+        else
+          f=<<END
+    VALUE _rb_return = Data_Wrap_Struct(rbc_#{obj_arg.underscore_typename}, 0, rb_#{obj_arg.underscore_typename}_destroy, _c_return);
+END
+        end
       else
         ""
       end
@@ -165,12 +181,16 @@ END
         f=<<END
     #{obj.underscore_typename}_#{name}(#{c_arg_list});
 END
+      elsif obj_arg = Valar.defined_object?(returns.name)
+        f=<<END
+    #{obj_arg.c_typename}* _c_return;
+    _c_return = #{obj.underscore_typename}_#{name}(#{c_arg_list});
+END
       else
         f=<<END
     #{Valar.vala2c(returns.name)} _c_return;
     _c_return = #{obj.underscore_typename}_#{name}(#{c_arg_list});
 END
-        
       end
     end
     

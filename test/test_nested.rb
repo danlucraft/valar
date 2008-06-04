@@ -20,4 +20,8 @@ class TestVala < Test::Unit::TestCase
     assert_equal "adama", Nested.foo_user(Nested::Foo.new)
     assert_equal 7, Nested.bar_user(Nested::Bar.new)
   end
+  
+  def test_defined_type_return
+    assert_equal Nested::Baz::Qux, Nested.qux_returner.class
+  end
 end

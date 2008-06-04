@@ -101,19 +101,29 @@ END
       end
     end
     
-    def output(fout)
+    def output_method_definition(fout)
+      fout.puts <<END
+
+/****  #{vala_typename} methods *****/
+
+END
+      functions.each do |method|
+        method.output(fout) if method.convertible?
+      end
+    end
+    
+    def output_class_definition(fout)
       fout.puts <<END
 
 /****  #{vala_typename} wrapper *****/
 
+END
+      fout.puts <<END
 static VALUE rbc_#{underscore_typename};
 END
       unless abstract
         fout.puts(destroy_function)
         fout.puts(alloc_function)
-      end
-      functions.each do |method|
-        method.output(fout) if method.convertible?
       end
     end
     
