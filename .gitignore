@@ -22,3 +22,16 @@ test/nested/mkmf.log
 test/nested/nested_rb.c
 test/nested/nested_rb.o
 test/nested/nested_rb.so
+test/simple/simple.gidl
+test/simple/simple.h
+test/simple/simple.c
+test/simple/simple.so
+test/simple/simple.vapi
+test/simple/simple.o
+test/simple/simplerb.so
+test/simple/Makefile
+test/simple/mkmf.log
+test/simple/simple_rb.c
+test/simple/simple_rb.o
+test/simple/simple_rb.so
+test/simple/semantic.cache

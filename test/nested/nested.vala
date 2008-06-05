@@ -17,6 +17,21 @@ namespace Nested {
 	}
 
 	public class Baz {
+		public int anint {get; set;}
+		
+		construct {
+			this.anint += 10;
+		}
+
+		public Baz(int a) {
+			this.anint = a;
+		}
+
+		public static void use_baz() {
+			Baz b = new Baz(10);
+			return;
+		}
+
 		public int times(int a, int b) {
 			// implicit:
 			Nested.Foo foo = new Nested.Foo();

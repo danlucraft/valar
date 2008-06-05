@@ -24,4 +24,9 @@ class TestVala < Test::Unit::TestCase
   def test_defined_type_return
     assert_equal Nested::Baz::Qux, Nested.qux_returner.class
   end
+  
+  def test_constructor
+    baz = Nested::Baz.new(101)
+    assert_equal 101, baz.anint
+  end
 end

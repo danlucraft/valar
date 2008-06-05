@@ -1,9 +1,11 @@
 class Valar
   class ValaObject
     attr_accessor :name, :functions, :outer_object, :abstract, :objects, :sup_class, :properties
+    attr_accessor :constructor_params
     
     def initialize
       @functions, @objects, @properties = [], [], []
+      @constructor_params = []
     end
     
     def object(name)
@@ -51,19 +53,18 @@ class Valar
       obj
     end
     
+    def constructor_type_conversions
+      ""
+    end
+    
     def alloc_function
       f=<<END
 static VALUE rb_#{underscore_typename}_alloc(VALUE klass) {
 END
-      if sup_class == "GLib.Object"
-        f+= <<END
-    #{c_typename} *#{underscore_typename} = #{underscore_typename}_new();
+      f+= constructor_type_conversions
+      f+= <<END
+    #{c_typename} *#{underscore_typename} = #{underscore_typename}_new(#{constructor_params.map{|a| "_c_" + a[1]}.join(", ")});
 END
-      else
-        f+= <<END
-    #{c_typename} *#{underscore_typename} = #{underscore_typename}_new(#{underscore_typename}_get_type());
-END
-      end
       f+= <<END
     VALUE obj;
     obj = Data_Wrap_Struct(klass, 0, rb_#{underscore_typename}_destroy, #{underscore_typename});

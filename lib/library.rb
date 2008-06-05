@@ -64,6 +64,13 @@ class Valar
           current_obj.objects << new_obj if current_obj
           current_obj = new_obj
           lib.objects << new_obj
+        when /public #{current_obj ? current_obj.name : "nothing"} \((.*)\);/
+          if $1 != ""
+            $1.split(", ").each do |param_str|
+              type_def, arg_name = param_str.split(" ")
+              current_obj.constructor_params << [ValaType.parse(type_def), arg_name]
+            end
+          end
         when /public (\w+ )*([\w\.\?]+) (\w+) \((.*)\);/
           params = $4
           keywords = $1
