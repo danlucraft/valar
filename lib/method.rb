@@ -36,8 +36,7 @@ END
       else
         f=<<END
 static VALUE rb_#{obj.underscore_typename}_#{name.downcase}(VALUE self#{params.length > 0 ? ", " : nil}#{rb_arg_list}) {
-    #{obj.c_typename} *#{obj.underscore_typename};
-    Data_Get_Struct(self, #{obj.c_typename}, #{obj.underscore_typename});
+    #{obj.c_typename}* #{obj.underscore_typename} = RVAL2GOBJ(self);
 END
       end
     end
@@ -159,12 +158,14 @@ END
         _rb_return = Qnil;
     }
     else {
-        _rb_return = Data_Wrap_Struct(rbc_#{obj_arg.underscore_typename}, 0, rb_#{obj_arg.underscore_typename}_destroy, _c_return);
+        _rb_return = GOBJ2RVAL(_c_return);
+//        _rb_return = Data_Wrap_Struct(rbc_#{obj_arg.underscore_typename}, 0, rb_#{obj_arg.underscore_typename}_destroy, _c_return);
     }
 END
         else
           f=<<END
-    VALUE _rb_return = Data_Wrap_Struct(rbc_#{obj_arg.underscore_typename}, 0, rb_#{obj_arg.underscore_typename}_destroy, _c_return);
+    VALUE _rb_return = GOBJ2RVAL(_c_return);
+//    VALUE _rb_return = Data_Wrap_Struct(rbc_#{obj_arg.underscore_typename}, 0, rb_#{obj_arg.underscore_typename}_destroy, _c_return);
 END
         end
       else

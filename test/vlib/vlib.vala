@@ -3,7 +3,7 @@
 
 using GLib;
 
-public class VLib {
+public class VLib : Object{
     public void hello() {
         stdout.printf ("Hello World, MyLib\n");
     }

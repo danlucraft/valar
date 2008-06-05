@@ -4,7 +4,7 @@ using Ruby;
 using GLib;
 
 namespace Nested {
-	public class Foo {
+	public class Foo : Object{
 		public string adama() {
 			return "adama";
 		}
@@ -16,7 +16,7 @@ namespace Nested {
 		}
 	}
 
-	public class Baz {
+	public class Baz : Object {
 		public int anint {get; set;}
 		
 		construct {
@@ -39,7 +39,7 @@ namespace Nested {
 			Nested.Bar bar = new Nested.Bar();
 			return a*b;
 		}
-		public class Qux {
+		public class Qux : Object {
 			public int nine() {
 				return 9;
 			}

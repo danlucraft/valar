@@ -106,7 +106,7 @@ END
 /****  #{vala_typename} methods *****/
 
 END
-      output_init_function(fout)
+      output_init_function(fout) unless abstract
       functions.each do |method|
         method.output(fout) if method.convertible?
       end
@@ -115,9 +115,9 @@ END
     def output_init_function(fout)
       fout.puts <<END
 
-static VALUE #{underscore_typename}_initialize(VALUE self, #{rb_arg_list}) {
+static VALUE #{underscore_typename}_initialize(VALUE self#{@constructor_params.empty? ? "" : ", "}#{rb_arg_list}) {
 #{constructor_type_conversions}
-    RBGTK_INITIALIZE(self, #{underscore_typename.upcase} (#{underscore_typename}_new (#{constructor_arg_list})));
+    G_INITIALIZE(self, #{underscore_typename}_new (#{constructor_arg_list}));
     return Qnil;
 }
 
@@ -137,18 +137,31 @@ END
     end
     
     def output_definition(fout)
-      if outer_object
-        fout.puts <<END
-    rbc_#{underscore_typename} = G_DEF_CLASS(TYPE_#{underscore_typename.upcase}, "#{name}", rbc_#{outer_object.underscore_typename});
+      if abstract
+        if outer_object
+          fout.puts <<END
+    rbc_#{underscore_typename} = rb_define_class_under(rbc_#{outer_object.underscore_typename}, "#{name}", rb_cObject);
 END
+        else
+          fout.puts <<END
+    rbc_#{underscore_typename} = rb_define_class("#{name}", rb_cObject);
+END
+        end
+        
       else
-        fout.puts <<END
-    rbc_#{underscore_typename} = G_DEF_CLASS(TYPE_#{underscore_typename.upcase}, "#{name}", m_vala);
+        if outer_object
+          fout.puts <<END
+    rbc_#{underscore_typename} = G_DEF_CLASS(#{underscore_typename}_get_type(), "#{name}", rbc_#{outer_object.underscore_typename});
 END
-      end
-      fout.puts <<END
+        else
+          fout.puts <<END
+    rbc_#{underscore_typename} = G_DEF_CLASS(#{underscore_typename}_get_type(), "#{name}", m_vala);
+END
+        end
+        fout.puts <<END
     rb_define_method(rbc_#{underscore_typename}, "initialize", #{underscore_typename}_initialize, #{@constructor_params.length});
 END
+      end
       functions.each do |method|
         if method.convertible?
           if method.static

@@ -1,4 +1,4 @@
-
+require 'gtk2'
 require 'test/nested/build_nested'
 require 'test/nested/nested_rb'
 require 'test/unit'
