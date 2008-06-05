@@ -54,52 +54,50 @@ class Valar
     end
     
     def constructor_type_conversions
-      ""
+      str = ""
+      @constructor_params.each do |param|
+        next if RUBY_TYPES.include? param[0].name
+        if ctype = VALA_TO_C[param[0].name]
+          if param[0].nullable?
+            str << f=<<END
+    #{Valar.vala2c(param[0].name)} _c_#{param[1]};
+    if (#{param[1]} == Qnil)
+        _c_#{param[1]} = NULL;
+    else
+        _c_#{param[1]} = #{Valar.ruby2c(ctype)}(#{param[1]});
+END
+          else
+            str << f=<<END
+    #{Valar.vala2c(param[0].name)} _c_#{param[1]} = #{Valar.ruby2c(ctype)}(#{param[1]});
+END
+          end
+        elsif obj_arg = Valar.defined_object?(param[0].name)
+          if param[0].nullable?
+            str << f=<<END
+    #{obj_arg.c_typename}* _c_#{param[1]};
+    if (#{param[1]} == Qnil)
+        _c_#{param[1]} = NULL;
+    else {
+        Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
+    }
+END
+          else
+            str << f=<<END
+    #{obj_arg.c_typename}* _c_#{param[1]};
+    Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
+END
+          end
+        end
+      end
+      str
     end
     
-    def alloc_function
-      f=<<END
-static VALUE rb_#{underscore_typename}_alloc(VALUE klass) {
-END
-      f+= constructor_type_conversions
-      f+= <<END
-    #{c_typename} *#{underscore_typename} = #{underscore_typename}_new(#{constructor_params.map{|a| "_c_" + a[1]}.join(", ")});
-END
-      f+= <<END
-    VALUE obj;
-    obj = Data_Wrap_Struct(klass, 0, rb_#{underscore_typename}_destroy, #{underscore_typename});
-END
-      if sup_class == "GLib.Object"
-        f+=<<END
-    g_object_ref(#{underscore_typename});
-END
-      else
-        f+=<<END
-    #{underscore_typename}_ref(#{underscore_typename});
-END
-      end
-      f+=<<END
-    return obj;
-}
-
-END
-      f
+    def constructor_arg_list
+      @constructor_params.map {|a| RUBY_TYPES.include?(a[0].name) ? a[1] : "_c_"+a[1]}.join(", ")
     end
     
-    def destroy_function
-      if sup_class == "GLib.Object"
-        <<END
-static void rb_#{underscore_typename}_destroy(void* #{underscore_typename}) {
-    g_object_unref(#{underscore_typename});
-}
-END
-      else
-        <<END
-static void rb_#{underscore_typename}_destroy(void* #{underscore_typename}) {
-    #{underscore_typename}_unref(#{underscore_typename});
-}
-END
-      end
+    def rb_arg_list
+      @constructor_params.map {|a| "VALUE "+a[1] }.join(", ")
     end
     
     def output_method_definition(fout)
@@ -108,9 +106,22 @@ END
 /****  #{vala_typename} methods *****/
 
 END
+      output_init_function(fout)
       functions.each do |method|
         method.output(fout) if method.convertible?
       end
+    end
+    
+    def output_init_function(fout)
+      fout.puts <<END
+
+static VALUE #{underscore_typename}_initialize(VALUE self, #{rb_arg_list}) {
+#{constructor_type_conversions}
+    RBGTK_INITIALIZE(self, #{underscore_typename.upcase} (#{underscore_typename}_new (#{constructor_arg_list})));
+    return Qnil;
+}
+
+END
     end
     
     def output_class_definition(fout)
@@ -120,29 +131,24 @@ END
 
 END
       fout.puts <<END
+#define _#{underscore_typename.upcase}_SELF(s) #{underscore_typename.upcase}(RVAL2GOBJ(s))
 static VALUE rbc_#{underscore_typename};
 END
-      unless abstract
-        fout.puts(destroy_function)
-        fout.puts(alloc_function)
-      end
     end
     
     def output_definition(fout)
       if outer_object
         fout.puts <<END
-    rbc_#{underscore_typename} = rb_define_class_under(rbc_#{outer_object.underscore_typename}, "#{name}", rb_cObject);
+    rbc_#{underscore_typename} = G_DEF_CLASS(TYPE_#{underscore_typename.upcase}, "#{name}", rbc_#{outer_object.underscore_typename});
 END
       else
         fout.puts <<END
-    rbc_#{underscore_typename} = rb_define_class("#{name}", rb_cObject);
+    rbc_#{underscore_typename} = G_DEF_CLASS(TYPE_#{underscore_typename.upcase}, "#{name}", m_vala);
 END
       end
-      unless abstract
-        fout.puts <<END
-    rb_define_alloc_func(rbc_#{underscore_typename}, rb_#{underscore_typename}_alloc);
+      fout.puts <<END
+    rb_define_method(rbc_#{underscore_typename}, "initialize", #{underscore_typename}_initialize, #{@constructor_params.length});
 END
-      end
       functions.each do |method|
         if method.convertible?
           if method.static

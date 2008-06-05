@@ -87,19 +87,19 @@ class Valar
           new_meth.obj = current_obj
           current_obj.functions << new_meth
         when /public (\w+ )*([\w\.\?]+) (\w+) \{(.*)\}/
-          get_meth = ValaMethod.new
-          get_meth.name = "get_#{$3}"
-          get_meth.ruby_name = $3
-          get_meth.returns = ValaType.parse($2)
-          get_meth.obj = current_obj
-          current_obj.functions << get_meth
-          set_meth = ValaMethod.new
-          set_meth.name = "set_#{$3}"
-          set_meth.ruby_name = "#{$3}="
-          set_meth.returns = ValaType.parse("void")
-          set_meth.obj = current_obj
-          set_meth.params << [ValaType.parse($2), "val"]
-          current_obj.functions << set_meth
+#           get_meth = ValaMethod.new
+#           get_meth.name = "get_#{$3}"
+#           get_meth.ruby_name = $3
+#           get_meth.returns = ValaType.parse($2)
+#           get_meth.obj = current_obj
+#           current_obj.functions << get_meth
+#           set_meth = ValaMethod.new
+#           set_meth.name = "set_#{$3}"
+#           set_meth.ruby_name = "#{$3}="
+#           set_meth.returns = ValaType.parse("void")
+#           set_meth.obj = current_obj
+#           set_meth.params << [ValaType.parse($2), "val"]
+#           current_obj.functions << set_meth
         when /^\s*\}$/
           current_obj = current_obj.outer_object
         when /\}/
@@ -127,6 +127,7 @@ class Valar
       File.open(@directory+"/#{@name}_rb.c", "w") do |fout|
         fout.puts <<END
 #include "ruby.h"
+#include "rbgtk.h"
 #include "#{@name}.h"
 END
         @objects.each do |obj|
@@ -139,7 +140,7 @@ END
         
         fout.puts <<END
 void Init_#{@name}_rb() {
-    g_type_init();
+    VALUE m_vala = rb_define_class("Vala", rb_cObject);
 END
         @objects.sort_by{|o| o.vala_typename.length}.each do |obj|
           obj.output_definition(fout)

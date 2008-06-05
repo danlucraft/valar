@@ -1,11 +1,21 @@
-# Loads mkmf which is used to make makefiles for Ruby extensions
+=begin
+extconf.rb for Ruby/GtkMozEmbed extention library
+=end
+
+PACKAGE_NAME = "simple_rb"
+
+TOPDIR = ENV["RG2_DIR"] || File.expand_path(File.dirname(__FILE__) + '/..')
+
+MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
+
+SRCDIR = File.expand_path("./src")
+
+$LOAD_PATH.unshift MKMF_GNOME2_DIR
+
 require 'mkmf-gnome2'
 
-# Give it a name
-extension_name = 'simple_rb'
 PKGConfig.have_package('gtk+-2.0')
-# The destination
-dir_config(extension_name)
 
-# Do the work
-create_makefile(extension_name)
+create_makefile_at_srcdir(PACKAGE_NAME, SRCDIR, 
+                          "-DRUBY_WEBKITGTK_COMPILATION")
+create_top_makefile

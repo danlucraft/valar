@@ -1,12 +1,13 @@
-
+require 'gtk2'
 require 'test/simple/build_simple'
-require 'test/simple/simple_rb'
+require 'test/simple/src/simple_rb'
 require 'test/unit'
+
 
 class TestVala < Test::Unit::TestCase
   def test_objects
-    assert Simple
-    assert Simple.new
-    assert_equal 7, Simple.new.seven
+    assert Vala::Simple
+    assert Vala::Simple.new(3)
+    assert_equal 7, Vala::Simple.new(8).seven
   end
 end
