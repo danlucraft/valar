@@ -29,4 +29,9 @@ class TestVala < Test::Unit::TestCase
     baz = Nested::Baz.new(101)
     assert_equal 101, baz.anint
   end
+  
+  def test_descended_from_gobj
+    q = Nested::Baz::Quux.new(Nested::Baz::Qux.new)
+    assert_equal 14, Nested.quux_user(q)
+  end
 end

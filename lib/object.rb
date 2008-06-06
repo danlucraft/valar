@@ -25,6 +25,10 @@ class Valar
       end
     end
     
+    def descends_from?(klass)
+      sup_class and (sup_class == klass or Valar.defined_object?(sup_class).descends_from?(klass))
+    end
+    
     def vala_typename
       make_name(".")
     end
@@ -72,8 +76,13 @@ END
 END
           end
         elsif obj_arg = Valar.defined_object?(param[0].name)
-          if param[0].nullable?
+          if obj_arg.descends_from?("GLib.Object")
             str << f=<<END
+    #{obj_arg.c_typename}* _c_#{param[1]} = RVAL2GOBJ(#{param[1]});
+END
+          else
+            if param[0].nullable?
+              str << f=<<END
     #{obj_arg.c_typename}* _c_#{param[1]};
     if (#{param[1]} == Qnil)
         _c_#{param[1]} = NULL;
@@ -81,11 +90,12 @@ END
         Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
     }
 END
-          else
-            str << f=<<END
+            else
+              str << f=<<END
     #{obj_arg.c_typename}* _c_#{param[1]};
     Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
 END
+            end
           end
         end
       end

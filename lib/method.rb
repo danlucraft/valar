@@ -111,7 +111,7 @@ END
 END
           end
         elsif obj_arg = Valar.defined_object?(param[0].name)
-          if obj_arg.sup_class == "GLib.Object"
+          if obj_arg.descends_from?("GLib.Object")
               str << f=<<END
     #{obj_arg.c_typename}* _c_#{param[1]} = RVAL2GOBJ(#{param[1]});
 END

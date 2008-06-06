@@ -12,7 +12,7 @@ class TestVala < Test::Unit::TestCase
     assert_equal 3, Vala::VLib.new.get_str_length("asd")
   end
   
-  # if --no-type-checks, these segfaults:
+  # if --no-type-checks, these segfault:
   def test_type_checks_work
     assert_raises(ArgumentError) {
       Vala::VLib.new.get_length(10)

@@ -44,6 +44,13 @@ namespace Nested {
 				return 9;
 			}
 		}
+		public class Quux : Baz {
+			public int fourteen() {
+				return 14;
+			}
+			public Quux(Qux q) {
+			}
+		}
 	}
 
 	public static string foo_user(Foo f) {
@@ -56,5 +63,9 @@ namespace Nested {
 
 	public static Baz.Qux qux_returner() {
 		return new Baz.Qux();
+	}
+
+	public static int quux_user(Nested.Baz.Quux q) {
+		return q.fourteen();
 	}
 }
