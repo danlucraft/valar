@@ -78,9 +78,5 @@ class TestVala < Test::Unit::TestCase
     vl = Vala::VLib.new
     vl.anint = 10
     assert_equal 10, vl.anint
-
-    assert_raises(ArgumentError) {
-      vl.anint = 10.9
-    }
   end
 end

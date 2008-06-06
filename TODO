@@ -1,5 +1,7 @@
 
 
+ o make rval 2 gobj conversions happen even when the object is 
+   the child of Glib.Object at any depth.
  o Convert data members
  o Convert constructors.
  o Convert Structs.
