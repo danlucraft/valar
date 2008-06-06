@@ -19,7 +19,6 @@ class Valar
       @dirname = File.dirname(filename)
       @basename = File.basename(filename)
       @name = @basename.split(".").first
-      p @name
       puts "loading library #{name}"
       doc = REXML::Document.new(File.read(filename))
 
@@ -134,7 +133,6 @@ END
           obj.output_class_definition(fout)
         end
         @objects.each do |obj|
-          puts "outputting: #{obj.name}"
           obj.output_method_definition(fout)
         end 
         

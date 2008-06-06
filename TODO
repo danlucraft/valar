@@ -1,10 +1,11 @@
 
-
- o make rval 2 gobj conversions happen even when the object is 
-   the child of Glib.Object at any depth.
+ o Vala bool type should convert to Ruby true/false
  o Convert data members
- o Convert constructors.
  o Convert Structs.
+
+ x Convert constructors.
+ x Convert properties appropriately.
  x Recognize types that are defined within the library itself.
- o Convert properties appropriately.
+ x make rval 2 gobj conversions happen even when the object is 
+   the child of Glib.Object at any depth.
  x Nullable types.

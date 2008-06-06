@@ -50,7 +50,8 @@ class Valar
     "int" => "int",
     "long" => "long",
     "double" => "double",
-    "string" => "char*"
+    "string" => "char*",
+    "bool" => "int"
   }
   
   VALA_TO_RUBY = {
