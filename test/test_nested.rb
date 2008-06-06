@@ -34,4 +34,12 @@ class TestVala < Test::Unit::TestCase
     q = Nested::Baz::Quux.new(Nested::Baz::Qux.new)
     assert_equal 14, Nested.quux_user(q)
   end
+  
+  def test_data_members
+    b = Nested::Bar.new
+    b.member = 10
+    assert_equal 10, b.member
+    b.foom = Nested::Foo.new
+    assert_equal "adama", Nested.foo_user(b.foom)
+  end
 end

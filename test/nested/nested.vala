@@ -11,6 +11,8 @@ namespace Nested {
 	}
 
 	public class Bar : Object {
+		public int member;
+		public weak Foo foom;
 		public static int seven() {
 			return 7;
 		}

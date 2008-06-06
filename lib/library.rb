@@ -86,19 +86,22 @@ class Valar
           new_meth.obj = current_obj
           current_obj.functions << new_meth
         when /public (\w+ )*([\w\.\?]+) (\w+) \{(.*)\}/
-#           get_meth = ValaMethod.new
-#           get_meth.name = "get_#{$3}"
-#           get_meth.ruby_name = $3
-#           get_meth.returns = ValaType.parse($2)
-#           get_meth.obj = current_obj
-#           current_obj.functions << get_meth
-#           set_meth = ValaMethod.new
-#           set_meth.name = "set_#{$3}"
-#           set_meth.ruby_name = "#{$3}="
-#           set_meth.returns = ValaType.parse("void")
-#           set_meth.obj = current_obj
-#           set_meth.params << [ValaType.parse($2), "val"]
-#           current_obj.functions << set_meth
+          # property - automatically handled by ruby-glib
+        when /public (\w+ )*([\w\.\?]+) (\w+);/
+          member = ValaMemberGet.new
+          member.name = "get_#{$3}"
+          member.ruby_name = $3
+          member.type = ValaType.parse($2)
+          member.member = $3
+          member.obj = current_obj
+          current_obj.functions << member
+          member = ValaMemberSet.new
+          member.name = "set_#{$3}"
+          member.ruby_name = "#{$3}="
+          member.type = ValaType.parse($2)
+          member.member = $3
+          member.obj = current_obj
+          current_obj.functions << member
         when /^\s*\}$/
           current_obj = current_obj.outer_object
         when /\}/
@@ -110,15 +113,16 @@ class Valar
     end
     
     def print
+      max_type_width = @objects.map{ |o|o.functions.map{ |m| m.returns.name.length}}.flatten.max
+      max_name_width = @objects.map{ |o|o.functions.map{ |m| m.name.length}}.flatten.max
       @objects.each do |obj|
         puts "#{obj.vala_typename}"
         obj.functions.sort_by{|m| m.name}.each do |meth|
-          puts "  #{meth.convertible? ? "*" : "x"} #{meth.returns.name.ljust(12)} #{meth.name.ljust(30)}(#{meth.params.map{|a| "#{a[0].name} #{a[1]}"}.join ", "})"
+          puts "  #{meth.convertible? ? "*" : "x"} #{meth.returns.name.ljust(max_type_width)}  #{meth.name.ljust(max_name_width)}  (#{meth.params.map{|a| "#{a[0].name} #{a[1]}"}.join ", "})"
         end
-#         puts "  ---properties---"
-#         obj.properties.sort_by{|m| m.name}.each do |prop|
-#           puts "  * #{prop.type.name.ljust(12)} #{prop.name}"
-#         end
+        obj.members.sort_by{|m| m.name}.each do |mem|
+          puts "  * #{mem.type.name.ljust(max_type_width)}  #{mem.name}"
+        end
       end
     end
     
@@ -133,7 +137,8 @@ END
           obj.output_class_definition(fout)
         end
         @objects.each do |obj|
-          obj.output_method_definition(fout)
+          obj.output_method_definitions(fout)
+          obj.output_member_definitions(fout)
         end 
         
         fout.puts <<END

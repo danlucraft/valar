@@ -1,11 +1,11 @@
 class Valar
   class ValaObject
     attr_accessor :name, :functions, :outer_object, :abstract, :objects, :sup_class, :properties
-    attr_accessor :constructor_params
+    attr_accessor :constructor_params, :members
     
     def initialize
       @functions, @objects, @properties = [], [], []
-      @constructor_params = []
+      @constructor_params, @members = [], []
     end
     
     def object(name)
@@ -110,7 +110,7 @@ END
       @constructor_params.map {|a| "VALUE "+a[1] }.join(", ")
     end
     
-    def output_method_definition(fout)
+    def output_method_definitions(fout)
       fout.puts <<END
 
 /****  #{vala_typename} methods *****/
@@ -119,6 +119,12 @@ END
       output_init_function(fout) unless abstract
       functions.each do |method|
         method.output(fout) if method.convertible?
+      end
+    end
+    
+    def output_member_definitions(fout)
+      members.each do |member|
+        member.output(fout) if member.convertible?
       end
     end
     

@@ -3,6 +3,7 @@ require 'library'
 require 'object'
 require 'method'
 require 'type'
+require 'member'
 
 class Valar
   VERSION = '1.0.0'

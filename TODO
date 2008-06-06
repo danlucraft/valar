@@ -1,8 +1,13 @@
 
+ o Convert ENUMS
+ o Data members can be nullable
+ o Data members should increment reference counts where appropriate, 
+   and should 'mark' Ruby VALUEs. (This has to do with the 'weak' keyword,
+   so learn about that.
  o Vala bool type should convert to Ruby true/false
- o Convert data members
  o Convert Structs.
 
+ x Convert data members
  x Convert constructors.
  x Convert properties appropriately.
  x Recognize types that are defined within the library itself.

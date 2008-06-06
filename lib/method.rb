@@ -16,11 +16,7 @@ class Valar
       out.puts argument_type_conversions
       out.puts body
       out.puts return_type_conversion
-      out.puts <<END
-    return _rb_return;
-}
-
-END
+      out.puts footer
     end
     
     def convertible?
@@ -37,6 +33,22 @@ END
         f=<<END
 static VALUE rb_#{obj.underscore_typename}_#{name.downcase}(VALUE self#{params.length > 0 ? ", " : nil}#{rb_arg_list}) {
     #{obj.c_typename}* #{obj.underscore_typename} = RVAL2GOBJ(self);
+END
+      end
+    end
+    
+    def footer
+      if returns.name == "void"
+      <<END
+    return Qnil;
+}
+
+END
+      else
+      <<END
+    return _rb_return;
+}
+
 END
       end
     end
@@ -113,7 +125,7 @@ END
         elsif obj_arg = Valar.defined_object?(param[0].name)
           if obj_arg.descends_from?("GLib.Object")
               str << f=<<END
-    #{obj_arg.c_typename}* _c_#{param[1]} = RVAL2GOBJ(#{param[1]});
+    #{obj_arg.c_typename}* _c_#{param[1]} = _#{obj_arg.underscore_typename.upcase}_SELF(#{param[1]});
 END
           else
             if param[0].nullable?
@@ -139,9 +151,7 @@ END
     
     def return_type_conversion
       if returns.name == "void"
-        f=<<END
-    VALUE _rb_return = Qnil;
-END
+        ""
       elsif ctype = VALA_TO_C[returns.name]
         if returns.nullable?
           f=<<END
@@ -202,7 +212,7 @@ END
     end
     
     def rb_arg_list
-      @params.map {|a| "VALUE "+a[1] }.join(", ")
+      params.map {|a| "VALUE "+a[1] }.join(", ")
     end
     
     def c_arg_list
@@ -210,12 +220,16 @@ END
         str = ""
       else
         str = obj.underscore_typename
-        if @params.length > 0
+        if params.length > 0
           str += ", "
         end
       end
-      str += @params.map {|a| RUBY_TYPES.include?(a[0].name) ? a[1] : "_c_"+a[1]}.join(", ")
+      str += c_arg_list1
       str
+    end
+    
+    def c_arg_list1
+      params.map {|a| RUBY_TYPES.include?(a[0].name) ? a[1] : "_c_"+a[1]}.join(", ")
     end
     
     def ctype?(type)
