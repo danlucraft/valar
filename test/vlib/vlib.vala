@@ -1,9 +1,7 @@
-// compiling with: 
-//   valac -C --library vlib vlib.vala --basedir ./
 
 using GLib;
 
-public class VLib : Object{
+public class VLib : Object {
     public void hello() {
         stdout.printf ("Hello World, MyLib\n");
     }
@@ -24,7 +22,7 @@ public class VLib : Object{
 	}
 
 	public Ruby.Value str_length_from_vala(Ruby.String rb_string) {
-		return Ruby.long2fix(rb_string.to_c().size());
+		return Ruby.long2fix(rb_string.to_vala().size());
 	}
 	
 	public void sum_3(Ruby.Int rb_a, Ruby.Number rb_b, Ruby.Float rb_c) {

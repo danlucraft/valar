@@ -18,8 +18,17 @@ namespace Ruby {
 		public void define_method (string name, Ruby.Callback func, int argc);
 		[CCode (cname = "rb_respond_to")]
 		public int respond_to (Ruby.ID method);
+		[CCode (cname = "rb_funcall")]
+		[PrintfLike]
+			public Value send(Ruby.ID method, int num_args, ...);
 	}
 
+	
+	[SimpleType]
+	[CCode (cname = "VALUE", cheader_filename = "ruby.h")]
+	public struct Class : Value {
+	}
+	
 	[SimpleType]
  	[CCode (cname = "VALUE", cheader_filename = "ruby.h")]
 	public struct Array : Value {
@@ -70,14 +79,14 @@ namespace Ruby {
  	[CCode (cname = "VALUE", cheader_filename = "ruby.h")]
 	public struct Number : Value {
 		[CCode (cname = "NUM2INT", cheader_filename = "ruby.h")]
-		public int to_c();
+		public int to_vala();
 	}
 
 	[SimpleType]
  	[CCode (cname = "VALUE", cheader_filename = "ruby.h")]
 	public struct Int : Number {
 		[CCode (cname = "NUM2INT", cheader_filename = "ruby.h")]
-		public int to_c();
+		public int to_vala();
 	}
 
 	[SimpleType]
@@ -87,17 +96,17 @@ namespace Ruby {
 
 	[SimpleType]
  	[CCode (cname = "VALUE", cheader_filename = "ruby.h")]
-	public struct Bool : Number {
+	public struct Bool : Value {
 	}
 
 	[CCode (cname = "rb_cObject")]
-	public const Value GlobalObject;
+	public const Class cObject;
 	[CCode (cname = "Qnil")]
 	public const Value Nil;
 	[CCode (cname = "Qtrue")]
-	public const Value True;
+	public const Bool True;
 	[CCode (cname = "Qfalse")]
-	public const Value False;
+	public const Bool False;
 
 	[CCode (cname = "rb_define_class", cheader_filename = "ruby.h")]
 	public static weak Ruby.Value define_class (string name, Ruby.Value superclass);
@@ -118,4 +127,17 @@ namespace Ruby {
 	[CCode (cname = "rb_intern", cheader_filename = "ruby.h")]
 	public static weak Ruby.ID id(string name);
 
+
+	public static void init();
+	public static void init_loadpath();
+	public static void script(string name);
+	[CCode (cname = "rb_eval_string")]
+	public static void eval(string code);
+	[CCode (cname = "rb_require")]
+	public static Ruby.Bool require(string filename);
+	[CCode (cname = "rb_class_new_instance")]
+	public static Ruby.Value class_new_instance(int a, int b, Ruby.Class klass);
+	[CCode (cname = "rb_const_get")]
+	public static Ruby.Class const_get(Ruby.Class top, Ruby.ID name);
+	public static void finalize();
 }
