@@ -4,6 +4,7 @@ require 'object'
 require 'method'
 require 'type'
 require 'member'
+require 'enum'
 
 class Valar
   VERSION = '1.0.0'

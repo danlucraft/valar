@@ -1,11 +1,11 @@
 class Valar
   class ValaObject
     attr_accessor :name, :functions, :outer_object, :abstract, :objects, :sup_class, :properties
-    attr_accessor :constructor_params, :members
+    attr_accessor :constructor_params, :members, :enums
     
     def initialize
       @functions, @objects, @properties = [], [], []
-      @constructor_params, @members = [], []
+      @constructor_params, @members, @enums = [], [], []
     end
     
     def object(name)
@@ -163,7 +163,6 @@ END
     rbc_#{underscore_typename} = rb_define_class("#{name}", rb_cObject);
 END
         end
-        
       else
         if outer_object
           fout.puts <<END
@@ -190,7 +189,17 @@ END
 END
           end
         end
-      end      
+      end
+      enums.each do |enum|
+        fout.puts <<END
+    VALUE rbc_#{enum.outer_object.underscore_typename}_#{enum.name.underscore} = rb_define_class_under(rbc_#{enum.outer_object.underscore_typename}, "#{enum.name}", rb_cObject);
+END
+        enum.values.each do |val|
+          fout.puts <<END
+    rb_define_const(rbc_#{enum.outer_object.underscore_typename}_#{enum.name.underscore}, "#{val}", INT2FIX(#{enum.outer_object.underscore_typename.upcase}_#{enum.name.underscore.upcase}_#{val}));
+END
+        end
+      end
     end
   end
 end

@@ -43,7 +43,10 @@ class Valar
       lib.directory = @dirname
       puts "loading library #{lib.name}"
       current_obj = nil
-      vapi_src.each_line do |line|
+      lines = vapi_src.split("\n")
+      i = 0
+      while i < lines.length
+        line = lines[i]
         case line
         when /namespace (.*) \{/
           new_obj = ValaObject.new
@@ -53,6 +56,19 @@ class Valar
           current_obj.objects << new_obj if current_obj
           current_obj = new_obj
           lib.objects << new_obj
+        when /public enum (\w+) \{/
+          new_enum = ValaEnum.new
+          new_enum.name = $1
+          new_enum.outer_object = current_obj
+          i += 1
+          line = lines[i]
+          until line =~ /\s\}/
+            line =~ /\s(\w+),?/
+            new_enum.values << $1
+            i += 1
+            line = lines[i]
+          end
+          current_obj.enums << new_enum
         when /public class (\w+)( : ([\w\.]+))? \{/
           new_obj = ValaObject.new
           new_obj.name = $1
@@ -108,6 +124,7 @@ class Valar
           puts "error unknown scope opening: '#{line.chomp}'"
           raise
         end
+        i += 1
       end
       lib
     end

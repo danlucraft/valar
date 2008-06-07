@@ -41,6 +41,12 @@ class TestVala < Test::Unit::TestCase
     assert_equal 10, b.member
     b.foom = Nested::Foo.new
     assert_equal "adama", Nested.foo_user(b.foom)
-    
+  end
+  
+  def test_enum
+    assert Nested::Colour
+    assert Nested::Colour::BLACK
+    assert Nested::Colour::RED
+    assert Nested::Colour::WHITE
   end
 end

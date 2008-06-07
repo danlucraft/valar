@@ -83,4 +83,8 @@ namespace Nested {
 			this.th = new Thing();
 		}
 	}
+
+	public enum Colour {
+		BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
+	}
 }
