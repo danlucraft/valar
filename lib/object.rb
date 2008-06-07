@@ -42,7 +42,7 @@ class Valar
     end
     
     def underscore_typename
-      make_name("_") {|name| name.downcase}
+      make_name("_") {|name| name.underscore }
     end
     
     def self.new_from_xml(el)
@@ -192,5 +192,15 @@ END
         end
       end      
     end
+  end
+end
+
+class String
+  # ImiBob -> imi_bob
+  # VLib   -> vlib
+  def underscore
+    self.gsub(/([a-z\d])([A-Z])/,'\1_\2').
+      tr("-", "_").
+      downcase
   end
 end

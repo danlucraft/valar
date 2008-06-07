@@ -41,5 +41,6 @@ class TestVala < Test::Unit::TestCase
     assert_equal 10, b.member
     b.foom = Nested::Foo.new
     assert_equal "adama", Nested.foo_user(b.foom)
+    
   end
 end

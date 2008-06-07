@@ -70,4 +70,17 @@ namespace Nested {
 	public static int quux_user(Nested.Baz.Quux q) {
 		return q.fourteen();
 	}
+
+	public class Thing : Object {
+		public void remove(ImiBob im) {
+			im.th = null;
+		}
+	}
+
+	public class ImiBob : Object {
+		public Thing th;
+		public void create() {
+			this.th = new Thing();
+		}
+	}
 }

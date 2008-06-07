@@ -73,5 +73,12 @@ public class VLib : Object{
 	}
 
 	public int anint { get; set; }
+
+	public static bool invert(bool a) {
+		if (a)
+			return false;
+		else
+			return true;
+	}
 }
 

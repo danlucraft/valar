@@ -108,7 +108,15 @@ END
       str = ""
       params.each do |param|
         next if RUBY_TYPES.include? param[0].name
-        if ctype = VALA_TO_C[param[0].name]
+        if param[0].name == "bool"
+          str << f=<<END
+    gboolean _c_#{param[1]};
+    if (#{param[1]} == Qtrue)
+        _c_#{param[1]} = TRUE;
+    else
+        _c_#{param[1]} = FALSE;
+END
+        elsif ctype = VALA_TO_C[param[0].name]
           if param[0].nullable?
             str << f=<<END
     #{Valar.vala2c(param[0].name)} _c_#{param[1]};
@@ -152,6 +160,14 @@ END
     def return_type_conversion
       if returns.name == "void"
         ""
+      elsif returns.name == "bool"
+          <<END
+    VALUE _rb_return;
+    if (_c_return == TRUE)
+        _rb_return = Qtrue;
+    else
+        _rb_return = Qfalse;
+END
       elsif ctype = VALA_TO_C[returns.name]
         if returns.nullable?
           f=<<END

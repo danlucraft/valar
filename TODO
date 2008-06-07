@@ -1,12 +1,15 @@
 
+
+
+ o Make use of the faster type checks FIXNUM_P.
  o Convert ENUMS
  o Data members can be nullable
  o Data members should increment reference counts where appropriate, 
    and should 'mark' Ruby VALUEs. (This has to do with the 'weak' keyword,
    so learn about that.
- o Vala bool type should convert to Ruby true/false
  o Convert Structs.
 
+ x Vala bool type should convert to Ruby true/false
  x Convert data members
  x Convert constructors.
  x Convert properties appropriately.

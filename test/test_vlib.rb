@@ -79,4 +79,9 @@ class TestVala < Test::Unit::TestCase
     vl.anint = 10
     assert_equal 10, vl.anint
   end
+  
+  def test_boolean_conversion
+    assert_equal true, Vala::VLib.invert(false)
+    assert_equal false, Vala::VLib.invert(true)
+  end
 end

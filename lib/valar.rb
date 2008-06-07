@@ -59,7 +59,8 @@ class Valar
     "int" => "Ruby.Int",
     "long" => "Ruby.Int",
     "double" => "Ruby.Float",
-    "string" => "Ruby.String"
+    "string" => "Ruby.String",
+    "bool" => "Ruby.Bool"
   }
   
   def self.ruby2c(type)

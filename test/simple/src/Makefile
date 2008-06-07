@@ -8,8 +8,8 @@ topdir = /usr/local/lib/ruby/1.8/i686-linux
 hdrdir = $(topdir)
 VPATH = $(srcdir):$(topdir):$(hdrdir)
 prefix = $(DESTDIR)/usr/local
-exec_prefix = $(prefix)
-sitedir = $(prefix)/lib/ruby/site_ruby
+exec_prefix = $(DESTDIR)/usr/local
+sitedir = $(DESTDIR)/usr/local/lib/ruby/site_ruby
 rubylibdir = $(libdir)/ruby/$(ruby_version)
 docdir = $(datarootdir)/doc/$(PACKAGE)
 dvidir = $(docdir)
@@ -24,28 +24,28 @@ includedir = $(prefix)/include
 infodir = $(datarootdir)/info
 sysconfdir = $(prefix)/etc
 mandir = $(datarootdir)/man
-libdir = $(exec_prefix)/lib
+libdir = $(DESTDIR)/usr/local/lib
 sharedstatedir = $(prefix)/com
 oldincludedir = $(DESTDIR)/usr/include
 pdfdir = $(docdir)
-sitearchdir = $(sitelibdir)/$(sitearch)
+sitearchdir = $(DESTDIR)/usr/local/lib/ruby/site_ruby/1.8/i686-linux
 bindir = $(exec_prefix)/bin
 localstatedir = $(prefix)/var
-sitelibdir = $(sitedir)/$(ruby_version)
+sitelibdir = $(DESTDIR)/usr/local/lib/ruby/site_ruby/1.8
 libexecdir = $(exec_prefix)/libexec
 
 CC = gcc
 LIBRUBY = $(LIBRUBY_A)
 LIBRUBY_A = lib$(RUBY_SO_NAME)-static.a
-LIBRUBYARG_SHARED = -Wl,-R -Wl,$(libdir) -L$(libdir) 
+LIBRUBYARG_SHARED = -Wl,-R -Wl,$(libdir) -L$(libdir) -L. 
 LIBRUBYARG_STATIC = -l$(RUBY_SO_NAME)-static
 
 RUBY_EXTCONF_H = 
-CFLAGS   =  -fPIC -g -O2 -Wall -I/usr/include/gtk-2.0 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/pixman-1   
+CFLAGS   =  -fPIC -g -O2 -Wall -I/usr/include/gtk-2.0 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng12   
 INCFLAGS = -I. -I. -I/usr/local/lib/ruby/1.8/i686-linux -I.
 CPPFLAGS = -DHAVE_RB_DEFINE_ALLOC_FUNC -DHAVE_RB_BLOCK_PROC -DHAVE_OBJECT_ALLOCATE -DHAVE_NODE_ATTRASGN -DRUBY_WEBKITGTK_COMPILATION  -I/usr/local/lib/ruby/site_ruby/1.8/i686-linux 
 CXXFLAGS = $(CFLAGS) 
-DLDFLAGS = -L.  -rdynamic -Wl,-export-dynamic   
+DLDFLAGS =  -rdynamic -Wl,-export-dynamic   
 LDSHARED = $(CC) -shared
 AR = ar
 EXEEXT = 
@@ -68,18 +68,18 @@ COPY = cp
 
 preload = 
 
-libpath = . $(libdir)
-LIBPATH =  -L'.' -L'$(libdir)' -Wl,-R'$(libdir)'
+libpath = $(libdir)
+LIBPATH =  -L'$(libdir)' -Wl,-R'$(libdir)'
 DEFFILE = 
 
-CLEANFILES = mkmf.log
+CLEANFILES = 
 DISTCLEANFILES = 
 
 extout = 
 extout_prefix = 
 target_prefix = 
 LOCAL_LIBS = 
-LIBS =   -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lm -lpangocairo-1.0 -lpango-1.0 -lcairo -lgobject-2.0 -lgmodule-2.0 -ldl -lglib-2.0   -ldl -lcrypt -lm   -lc
+LIBS =   -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lm -lpangocairo-1.0 -lfontconfig -lXext -lXrender -lXinerama -lXi -lXrandr -lXcursor -lXcomposite -lXdamage -lpango-1.0 -lcairo -lX11 -lXfixes -lgobject-2.0 -lgmodule-2.0 -ldl -lglib-2.0   -ldl -lcrypt -lm   -lc
 SRCS = simple.c simple_rb.c
 OBJS = simple.o simple_rb.o
 TARGET = simple_rb
@@ -142,7 +142,7 @@ site-install-rb: install-rb
 
 $(DLLIB): $(OBJS)
 	@-$(RM) $@
-	$(LDSHARED) -o $@ $(OBJS) $(LIBPATH) $(DLDFLAGS) $(LOCAL_LIBS) $(LIBS)
+	$(LDSHARED) $(DLDFLAGS) $(LIBPATH) -o $@ $(OBJS) $(LOCAL_LIBS) $(LIBS)
 
 
 
