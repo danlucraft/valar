@@ -6,7 +6,7 @@ public class VLib : Object {
         stdout.printf ("Hello World, MyLib\n");
     }
 
-	public Ruby.Value equals_nil(Ruby.Value input) {
+	public Ruby.Bool equals_nil(Ruby.Value input) {
 		if (input == Ruby.Nil)
 			return Ruby.True;
 		else
@@ -33,7 +33,7 @@ public class VLib : Object {
 		return Ruby.Array.new();
 	}
 
-	public Ruby.Value responds_to_length(Ruby.Value obj) {
+	public Ruby.Bool responds_to_length(Ruby.Value obj) {
 		if (obj.respond_to(Ruby.id("length")) == 0)
 			return Ruby.False;
 		return Ruby.True;
@@ -78,5 +78,12 @@ public class VLib : Object {
 		else
 			return true;
 	}
+
+// 	public static int iterator_length(Ruby.Array rba) {
+// 		int i = 0;
+// 		foreach(Ruby.Value obj in rba)
+// 			i += 1;
+// 		return i;
+// 	}
 }
 

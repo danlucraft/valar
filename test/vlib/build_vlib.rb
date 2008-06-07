@@ -4,6 +4,7 @@ FileUtils.cd "test/vlib" do
   %x{rm vlib.c vlib.h vlib.so vlib_rb.so vlib_rb.c}
   puts "compiling vlib..."
   puts %x{valac -C --library vlib vlib.vala --basedir ./ --vapidir=./../../vapi/ --pkg=Ruby}
+#   puts %x{valac -C --library vlib vlib.vala --basedir ./ --pkg gee-1.0 --vapidir=./../../vapi/ --pkg=Ruby}
   c_src = File.read("vlib.c")
   c_src.gsub!("#include <vlib.h>", "#include \"vlib.h\"")
   c_src.gsub!("#include <ruby.h>", "#include \"ruby.h\"");

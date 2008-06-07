@@ -1,6 +1,6 @@
 
 
-
+ o iterators for array
  o Make use of the faster type checks FIXNUM_P.
  o Data members can be nullable
  o Data members should increment reference counts where appropriate, 

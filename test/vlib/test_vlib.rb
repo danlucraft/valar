@@ -56,4 +56,9 @@ class TestVala < Test::Unit::TestCase
     assert_equal 4, VLib.new.vala_length("asdf")
     assert_equal 7, VLib.new.vala_length("asdf123")
   end
+  
+#   def test_array_iterator
+#     assert_equal 4, VLib.iterator_length([1, 2, 3, 4])
+#     assert_equal 0, VLib.iterator_length([])
+#   end
 end
