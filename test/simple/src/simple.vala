@@ -10,3 +10,13 @@ public class Simple : Object {
 		anint = a;
 	}
 }
+
+public class Simple2 {
+	public int anint {get; set;}
+	public int eight() {
+		return 8;
+	}
+	public Simple2(int a) {
+		anint = a;
+	}
+}
