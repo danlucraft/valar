@@ -8,6 +8,10 @@ class Valar
       @constructor_params, @members, @enums = [], [], []
     end
     
+    def convertible?
+      descends_from? "GLib.Object"
+    end
+    
     def object(name)
       @objects.find{|o| o.name == name.to_s}
     end

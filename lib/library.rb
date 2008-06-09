@@ -133,6 +133,7 @@ class Valar
       max_type_width = @objects.map{ |o|o.functions.map{ |m| m.returns.name.length}}.flatten.max
       max_name_width = @objects.map{ |o|o.functions.map{ |m| m.name.length}}.flatten.max
       @objects.each do |obj|
+        next unless obj.convertible?
         puts "#{obj.vala_typename}"
         obj.functions.sort_by{|m| m.name}.each do |meth|
           puts "  #{meth.convertible? ? "*" : "x"} #{meth.returns.name.ljust(max_type_width)}  #{meth.name.ljust(max_name_width)}  (#{meth.params.map{|a| "#{a[0].name} #{a[1]}"}.join ", "})"
@@ -151,11 +152,13 @@ class Valar
 #include "#{@name}.h"
 END
         @objects.each do |obj|
-          obj.output_class_definition(fout)
+          obj.output_class_definition(fout) if obj.convertible?
         end
         @objects.each do |obj|
-          obj.output_method_definitions(fout)
-          obj.output_member_definitions(fout)
+          if obj.convertible?
+            obj.output_method_definitions(fout)
+            obj.output_member_definitions(fout)
+          end
         end 
         
         fout.puts <<END
@@ -163,7 +166,7 @@ void Init_#{@name}_rb() {
     VALUE m_vala = rb_define_class("Vala", rb_cObject);
 END
         @objects.sort_by{|o| o.vala_typename.length}.each do |obj|
-          obj.output_definition(fout)
+          obj.output_definition(fout) if obj.convertible?
         end
         fout.puts "}\n"
       end     
