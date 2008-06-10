@@ -87,20 +87,22 @@ class Valar
             end
           end
         when /public (\w+ )*([\w\.\?]+) (\w+) \((.*)\);/
-          params = $4
-          keywords = $1
-          new_meth = ValaMethod.new
-          new_meth.name = $3
-          new_meth.returns = ValaType.parse($2)
-          new_meth.static = (keywords and keywords.include?("static"))
-          if params
-            params.split(", ").each do |param_str|
-              type_def, arg_name = param_str.split(" ")
-              new_meth.params << [ValaType.parse(type_def), arg_name]
+          unless $1 and $1.include? "signal"
+            params = $4
+            keywords = $1
+            new_meth = ValaMethod.new
+            new_meth.name = $3
+            new_meth.returns = ValaType.parse($2)
+            new_meth.static = (keywords and keywords.include?("static"))
+            if params
+              params.split(", ").each do |param_str|
+                type_def, arg_name = param_str.split(" ")
+                new_meth.params << [ValaType.parse(type_def), arg_name]
+              end
             end
+            new_meth.obj = current_obj
+            current_obj.functions << new_meth
           end
-          new_meth.obj = current_obj
-          current_obj.functions << new_meth
         when /public (\w+ )*([\w\.\?]+) (\w+) \{(.*)\}/
           # property - automatically handled by ruby-glib
         when /public (\w+ )*([\w\.\?]+) (\w+);/
@@ -163,7 +165,6 @@ END
         
         fout.puts <<END
 void Init_#{@name}_rb() {
-    VALUE m_vala = rb_define_class("Vala", rb_cObject);
 END
         @objects.sort_by{|o| o.vala_typename.length}.each do |obj|
           obj.output_definition(fout) if obj.convertible?

@@ -9,7 +9,7 @@ class Valar
     end
     
     def convertible?
-      descends_from? "GLib.Object"
+      descends_from? "GLib.Object" or abstract
     end
     
     def object(name)
@@ -174,7 +174,7 @@ END
 END
         else
           fout.puts <<END
-    rbc_#{underscore_typename} = G_DEF_CLASS(#{underscore_typename}_get_type(), "#{name}", m_vala);
+    rbc_#{underscore_typename} = G_DEF_CLASS(#{underscore_typename}_get_type(), "#{name}", rb_cObject);
 END
         end
         fout.puts <<END

@@ -6,9 +6,9 @@ require 'test/unit'
 
 class TestVala < Test::Unit::TestCase
   def test_gobjects
-    assert Vala::Simple
-    assert Vala::Simple.new(3)
-    assert_equal 7, Vala::Simple.new(8).seven
+    assert Simple
+    assert Simple.new(3)
+    assert_equal 7, Simple.new(8).seven
   end
   
 #   def test_objects

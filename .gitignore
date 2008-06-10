@@ -35,3 +35,8 @@ test/simple/src/simple_rb.c
 test/simple/src/simple_rb.o
 test/simple/src/simple_rb.so
 test/simple/src/semantic.cache
+test/embed/embed.gidl
+test/embed/embed.h
+test/embed/embed.c
+test/embed/embed.vapi
+test/embed/embed
