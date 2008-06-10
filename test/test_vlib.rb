@@ -84,4 +84,15 @@ class TestVala < Test::Unit::TestCase
     assert_equal true, Vala::VLib.invert(false)
     assert_equal false, Vala::VLib.invert(true)
   end
+  
+  def signals
+    v = Vala::VLib.new
+    foo = nil
+    v.signal_connect("sig_1") do |val|
+      foo = val
+    end
+    assert_nil foo
+    v.trigger_sig_1(101)
+    assert_equal 101, foo
+  end
 end

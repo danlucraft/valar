@@ -1,5 +1,4 @@
 
-
  o iterators for array
  o Make use of the faster type checks FIXNUM_P.
  o Data members can be nullable
@@ -8,6 +7,7 @@
    so learn about that.
  o Convert Structs.
 
+ x signals
  x embedding example
  x Convert ENUMS
  x Vala bool type should convert to Ruby true/false

@@ -85,5 +85,11 @@ public class VLib : Object {
 // 			i += 1;
 // 		return i;
 // 	}
+
+	public signal void sig_1(int a);
+
+	public void trigger_sig_1(int a) {
+		this.sig_1(a);
+	}
 }
 
