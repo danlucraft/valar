@@ -95,4 +95,10 @@ class TestVala < Test::Unit::TestCase
     v.trigger_sig_1(101)
     assert_equal 101, foo
   end
+  
+  def test_unichar
+    v = VLib.new
+    assert_equal "ö", v.get_unichar("höllo", 1)
+    assert_equal "ööööö", v.set_unichar("ö", 5)
+  end
 end

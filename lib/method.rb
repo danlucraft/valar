@@ -123,11 +123,11 @@ END
     if (#{param[1]} == Qnil)
         _c_#{param[1]} = NULL;
     else
-        _c_#{param[1]} = #{Valar.ruby2c(ctype)}(#{param[1]});
+        _c_#{param[1]} = #{Valar.ruby2c(ctype).gsub("\\1", param[1])};
 END
           else
             str << f=<<END
-    #{Valar.vala2c(param[0].name)} _c_#{param[1]} = #{Valar.ruby2c(ctype)}(#{param[1]});
+    #{Valar.vala2c(param[0].name)} _c_#{param[1]} = #{Valar.ruby2c(ctype).gsub("\\1", param[1])};
 END
           end
         elsif obj_arg = Valar.defined_object?(param[0].name)
@@ -175,11 +175,11 @@ END
     if (_c_return == NULL)
         _rb_return = Qnil;
     else
-        _rb_return = #{Valar.c2ruby(ctype)}(_c_return);
+        _rb_return = #{Valar.c2ruby(ctype).gsub("\\1", "_c_return")};
 END
         else
           f=<<END
-    VALUE _rb_return = #{Valar.c2ruby(ctype)}(_c_return);
+    VALUE _rb_return = #{Valar.c2ruby(ctype).gsub("\\1", "_c_return")};
 END
         end
       elsif obj_arg = Valar.defined_object?(returns.name)

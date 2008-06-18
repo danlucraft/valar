@@ -10,6 +10,7 @@ class Valar
     
     def convertible?
       descends_from? "GLib.Object" or abstract
+#      true
     end
     
     def object(name)
@@ -72,11 +73,11 @@ class Valar
     if (#{param[1]} == Qnil)
         _c_#{param[1]} = NULL;
     else
-        _c_#{param[1]} = #{Valar.ruby2c(ctype)}(#{param[1]});
+        _c_#{param[1]} = #{Valar.ruby2c(ctype).gsub("\\1", param[1])};
 END
           else
             str << f=<<END
-    #{Valar.vala2c(param[0].name)} _c_#{param[1]} = #{Valar.ruby2c(ctype)}(#{param[1]});
+    #{Valar.vala2c(param[0].name)} _c_#{param[1]} = #{Valar.ruby2c(ctype).gsub("\\1", param[1])};
 END
           end
         elsif obj_arg = Valar.defined_object?(param[0].name)

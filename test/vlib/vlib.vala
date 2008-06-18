@@ -91,5 +91,16 @@ public class VLib : Object {
 	public void trigger_sig_1(int a) {
 		this.sig_1(a);
 	}
+
+	public unichar get_unichar(string s, int i) {
+		return s[i];
+	}
+
+	public string set_unichar(unichar uc, int len) {
+		StringBuilder s = new StringBuilder();
+		for(int i = 0; i < len; i++) 
+			s.append_unichar(uc);
+		return s.str;
+	}
 }
 

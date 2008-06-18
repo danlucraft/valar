@@ -8,6 +8,7 @@
    so learn about that.
  o Convert Structs.
 
+ x unichar conversions
  x signals
  x embedding example
  x Convert ENUMS

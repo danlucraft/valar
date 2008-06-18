@@ -31,18 +31,20 @@ class Valar
   RUBY_TYPES = TYPE_CHECK.keys + COMPOSITE_TYPE_CHECK.keys + %w(Ruby.Value)
 
   TYPE_MAP = {
-    'char'          => [ 'NUM2CHR',  'CHR2FIX' ],
-    'char *'        => [ 'STR2CSTR', 'rb_str_new2' ],
-    'char*'         => [ 'STR2CSTR', 'rb_str_new2' ],
-    'const char *'  => [ 'STR2CSTR', 'rb_str_new2' ],
-    'const char*'   => [ 'STR2CSTR', 'rb_str_new2' ],
-    'double'        => [ 'NUM2DBL',  'rb_float_new' ],
-    'int'           => [ 'F'+'IX2INT',  'INT2FIX' ],
-    'long'          => [ 'NUM2INT',  'INT2NUM' ],
-    'unsigned int'  => [ 'NUM2UINT', 'UINT2NUM' ],
-    'unsigned long' => [ 'NUM2UINT', 'UINT2NUM' ],
-    'unsigned'      => [ 'NUM2UINT', 'UINT2NUM' ],
-    'VALUE'         => [ '', '' ],
+    'char'          => [ 'NUM2CHR(\1)',  'CHR2FIX(\1)' ],
+    'char *'        => [ 'STR2CSTR(\1)', 'rb_str_new2(\1)' ],
+    'char*'         => [ 'STR2CSTR(\1)', 'rb_str_new2(\1)' ],
+    'const char *'  => [ 'STR2CSTR(\1)', 'rb_str_new2(\1)' ],
+    'const char*'   => [ 'STR2CSTR(\1)', 'rb_str_new2(\1)' ],
+    'double'        => [ 'NUM2DBL(\1)',  'rb_float_new(\1)' ],
+    'int'           => [ 'FIX2INT(\1)',  'INT2FIX(\1)' ],
+    'long'          => [ 'NUM2INT(\1)',  'INT2NUM(\1)' ],
+    'unsigned int'  => [ 'NUM2UINT(\1)', 'UINT2NUM(\1)' ],
+    'unsigned long' => [ 'NUM2UINT(\1)', 'UINT2NUM(\1)' ],
+    'unsigned'      => [ 'NUM2UINT(\1)', 'UINT2NUM(\1)' ],
+    'gunichar'      => [ '*g_utf8_to_ucs4(STR2CSTR(\1), RSTRING_LEN(\1), NULL, NULL, NULL)', 
+                         'rb_str_new2(g_ucs4_to_utf8(&\1, 1, NULL, NULL, NULL))'],
+    'VALUE'         => [ '', '', '', '' ],
     # Can't do these converters because they conflict with the above:
     # ID2SYM(x), SYM2ID(x), NUM2DBL(x), F\IX2UINT(x)
   }
@@ -53,15 +55,18 @@ class Valar
     "long" => "long",
     "double" => "double",
     "string" => "char*",
-    "bool" => "int"
+    "bool" => "int",
+    "unichar" => "gunichar"
   }
   
+  # type check VALUEs when passing to and from Ruby.
   VALA_TO_RUBY = {
     "int" => "Ruby.Int",
     "long" => "Ruby.Int",
     "double" => "Ruby.Float",
     "string" => "Ruby.String",
-    "bool" => "Ruby.Bool"
+    "bool" => "Ruby.Bool",
+    "unichar" => "Ruby.String"
   }
   
   def self.ruby2c(type)
