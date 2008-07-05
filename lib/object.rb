@@ -10,7 +10,6 @@ class Valar
     
     def convertible?
       descends_from? "GLib.Object" or abstract
-#      true
     end
     
     def object(name)
@@ -65,50 +64,28 @@ class Valar
     def constructor_type_conversions
       str = ""
       @constructor_params.each do |param|
-        next if RUBY_TYPES.include? param[0].name
-        if ctype = VALA_TO_C[param[0].name]
-          if param[0].nullable?
-            str << f=<<END
-    #{Valar.vala2c(param[0].name)} _c_#{param[1]};
-    if (#{param[1]} == Qnil)
-        _c_#{param[1]} = NULL;
-    else
-        _c_#{param[1]} = #{Valar.ruby2c(ctype).gsub("\\1", param[1])};
-END
-          else
-            str << f=<<END
-    #{Valar.vala2c(param[0].name)} _c_#{param[1]} = #{Valar.ruby2c(ctype).gsub("\\1", param[1])};
-END
-          end
-        elsif obj_arg = Valar.defined_object?(param[0].name)
-          if obj_arg.descends_from?("GLib.Object")
-            str << f=<<END
-    #{obj_arg.c_typename}* _c_#{param[1]} = RVAL2GOBJ(#{param[1]});
-END
-          else
-            if param[0].nullable?
-              str << f=<<END
-    #{obj_arg.c_typename}* _c_#{param[1]};
-    if (#{param[1]} == Qnil)
-        _c_#{param[1]} = NULL;
+        type, varname = *param
+        if type.nullable?
+          str << f=<<END
+    #{type.c_type} _c_#{varname};
+    if (#{varname} == Qnil)
+        _c_#{varname} = NULL;
     else {
-        Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
+        #{type.ruby_to_c(:before, varname, "_c_"+varname)}
     }
 END
-            else
-              str << f=<<END
-    #{obj_arg.c_typename}* _c_#{param[1]};
-    Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
+        else
+          str << f=<<END
+    #{type.c_type} _c_#{varname};
+    #{type.ruby_to_c(:before, varname, "_c_"+varname)}
 END
-            end
-          end
         end
       end
       str
     end
     
     def constructor_arg_list
-      @constructor_params.map {|a| RUBY_TYPES.include?(a[0].name) ? a[1] : "_c_"+a[1]}.join(", ")
+      @constructor_params.map {|type, name| "_c_"+name}.join(", ")
     end
     
     def rb_arg_list
@@ -217,7 +194,9 @@ class String
       tr("-", "_").
       downcase
   end
-  
+
+  # FileError -> FILE_ERROR
+  # IOError -> IO_ERROR
   def errorcase
     self.gsub(/([a-z\d])([A-Z])/,'\1_\2').
       gsub(/([A-Z][A-Z])([A-Z])/,'\1_\2').

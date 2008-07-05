@@ -9,7 +9,7 @@ class Valar
     def ruby_name
       @ruby_name || @name
     end
-    
+  
     def output(out)
       out.puts header
       out.puts type_checks
@@ -20,8 +20,8 @@ class Valar
     end
     
     def convertible?
-      Valar.convertible_type?(returns) and 
-        params.all? {|param| Valar.convertible_type?(param[0])}
+      returns.backward_convertible? and 
+        params.all? {|param| param[0].forward_convertible?}
     end
     
     def header
@@ -56,49 +56,27 @@ END
     def type_checks
       str = ""
       params.each do |param|
-        if VALA_TO_RUBY.include? param[0].name
-          type_name = VALA_TO_RUBY[param[0].name]
+        type = param[0]
+        varname = param[1]
+        ctypes, message = type.ruby_type_check
+        next unless ctypes
+        if type.nullable?
+          condition = ctypes.map {|ctype| "TYPE(#{varname}) != #{ctype}"}.join(" && ")
+          condition += " && #{param[1]} != Qnil"
+          str << f=<<END
+    if (#{condition}) {
+        VALUE rb_arg_error = rb_eval_string("ArgumentError");
+        rb_raise(rb_arg_error, "#{message} or nil");
+    }
+END
         else
-          type_name = param[0].name
-        end
-        ctype, msg = TYPE_CHECK[type_name]
-        if ctype
-          if param[0].nullable?
-            str << f=<<END
-    if (TYPE(#{param[1]}) != #{ctype} && #{param[1]} != Qnil) {
-        VALUE rb_arg_error = rb_eval_string("ArgumentError");
-        rb_raise(rb_arg_error, "#{msg} or nil");
-    }
-END
-          else
-            str << f=<<END
-    if (TYPE(#{param[1]}) != #{ctype}) {
-        VALUE rb_arg_error = rb_eval_string("ArgumentError");
-        rb_raise(rb_arg_error, "#{msg}");
-    }
-END
-          end
-        end
-        ctypes, msg = COMPOSITE_TYPE_CHECK[type_name]
-        if ctypes
-          if param[0].nullable?
-            condition = ctypes.map {|ctype| "TYPE(#{param[1]}) != #{ctype}"}.join(" && ")
-            condition += " && #{param[1]} != Qnil"
-            str << f=<<END
+          condition = ctypes.map {|ctype| "TYPE(#{param[1]}) != #{ctype}"}.join(" && ")
+          str << f=<<END
     if (#{condition}) {
         VALUE rb_arg_error = rb_eval_string("ArgumentError");
-        rb_raise(rb_arg_error, "#{msg} or nil");
+        rb_raise(rb_arg_error, "#{message}");
     }
 END
-          else
-            condition = ctypes.map {|ctype| "TYPE(#{param[1]}) != #{ctype}"}.join(" && ")
-            str << f=<<END
-    if (#{condition}) {
-        VALUE rb_arg_error = rb_eval_string("ArgumentError");
-        rb_raise(rb_arg_error, "#{msg}");
-    }
-END
-          end
         end
       end
       str
@@ -107,51 +85,21 @@ END
     def argument_type_conversions
       str = ""
       params.each do |param|
-        next if RUBY_TYPES.include? param[0].name
-        if param[0].name == "bool"
+        type, varname = *param
+        if type.nullable?
           str << f=<<END
-    gboolean _c_#{param[1]};
-    if (#{param[1]} == Qtrue)
-        _c_#{param[1]} = TRUE;
-    else
-        _c_#{param[1]} = FALSE;
-END
-        elsif ctype = VALA_TO_C[param[0].name]
-          if param[0].nullable?
-            str << f=<<END
-    #{Valar.vala2c(param[0].name)} _c_#{param[1]};
-    if (#{param[1]} == Qnil)
-        _c_#{param[1]} = NULL;
-    else
-        _c_#{param[1]} = #{Valar.ruby2c(ctype).gsub("\\1", param[1])};
-END
-          else
-            str << f=<<END
-    #{Valar.vala2c(param[0].name)} _c_#{param[1]} = #{Valar.ruby2c(ctype).gsub("\\1", param[1])};
-END
-          end
-        elsif obj_arg = Valar.defined_object?(param[0].name)
-          if obj_arg.descends_from?("GLib.Object")
-              str << f=<<END
-    #{obj_arg.c_typename}* _c_#{param[1]} = _#{obj_arg.underscore_typename.upcase}_SELF(#{param[1]});
-END
-          else
-            if param[0].nullable?
-              str << f=<<END
-    #{obj_arg.c_typename}* _c_#{param[1]};
-    if (#{param[1]} == Qnil)
-        _c_#{param[1]} = NULL;
+    #{type.c_type} _c_#{varname};
+    if (#{varname} == Qnil)
+        _c_#{varname} = NULL;
     else {
-        Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
+        #{type.ruby_to_c(:before, varname, "_c_"+varname)}
     }
 END
-            else
-              str << f=<<END
-    #{obj_arg.c_typename}* _c_#{param[1]};
-    Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
+        else
+            str << f=<<END
+    #{type.c_type} _c_#{varname};
+    #{type.ruby_to_c(:before, varname, "_c_"+varname)}
 END
-            end
-          end
         end
       end
       str
@@ -160,48 +108,22 @@ END
     def return_type_conversion
       if returns.name == "void"
         ""
-      elsif returns.name == "bool"
-          <<END
-    VALUE _rb_return;
-    if (_c_return == TRUE)
-        _rb_return = Qtrue;
-    else
-        _rb_return = Qfalse;
-END
-      elsif ctype = VALA_TO_C[returns.name]
+      else
         if returns.nullable?
           f=<<END
-     VALUE _rb_return;
+    VALUE _rb_return;
     if (_c_return == NULL)
         _rb_return = Qnil;
-    else
-        _rb_return = #{Valar.c2ruby(ctype).gsub("\\1", "_c_return")};
+    else {
+        #{returns.c_to_ruby(:after, "_c_return", "_rb_return")}
+    }
 END
         else
-          f=<<END
-    VALUE _rb_return = #{Valar.c2ruby(ctype).gsub("\\1", "_c_return")};
-END
-        end
-      elsif obj_arg = Valar.defined_object?(returns.name)
-        if returns.nullable?
           f=<<END
     VALUE _rb_return;
-    if (_c_return == NULL) {
-        _rb_return = Qnil;
-    }
-    else {
-        _rb_return = GOBJ2RVAL(_c_return);
-//        _rb_return = Data_Wrap_Struct(rbc_#{obj_arg.underscore_typename}, 0, rb_#{obj_arg.underscore_typename}_destroy, _c_return);
-    }
-END
-        else
-          f=<<END
-    VALUE _rb_return = GOBJ2RVAL(_c_return);
-//    VALUE _rb_return = Data_Wrap_Struct(rbc_#{obj_arg.underscore_typename}, 0, rb_#{obj_arg.underscore_typename}_destroy, _c_return);
+    #{returns.c_to_ruby(:after, "_c_return", "_rb_return")}
 END
         end
-      else
-        ""
       end
     end
     
@@ -213,22 +135,13 @@ END
     inner_error = NULL;
 END
       end
-      if RUBY_TYPES.include? returns.name
-        f << <<END
-    VALUE _rb_return = #{obj.underscore_typename}_#{name}(#{c_arg_list});
-END
-      elsif returns.name == "void"
+      if returns.name == "void"
         f << <<END
     #{obj.underscore_typename}_#{name}(#{c_arg_list});
 END
-      elsif obj_arg = Valar.defined_object?(returns.name)
-        f << <<END
-    #{obj_arg.c_typename}* _c_return;
-    _c_return = #{obj.underscore_typename}_#{name}(#{c_arg_list});
-END
       else
         f << <<END
-    #{Valar.vala2c(returns.name)} _c_return;
+    #{returns.c_type} _c_return;
     _c_return = #{obj.underscore_typename}_#{name}(#{c_arg_list});
 END
       end
@@ -271,7 +184,9 @@ END
     end
     
     def c_arg_list1
-      params.map {|a| RUBY_TYPES.include?(a[0].name) ? a[1] : "_c_"+a[1]}.join(", ")
+      params.map do |type, name| 
+        type.args("_c_" + name) || "_c_#{name}"
+      end.join(", ")
     end
     
     def ctype?(type)
@@ -293,3 +208,54 @@ END
     end
   end
 end
+
+#         elsif obj_arg = Valar.defined_object?(param[0].name)
+#           if obj_arg.descends_from?("GLib.Object")
+#               str << f=<<END
+#     #{obj_arg.c_typename}* _c_#{param[1]} = _#{obj_arg.underscore_typename.upcase}_SELF(#{param[1]});
+# END
+#           else
+#             if param[0].nullable?
+#               str << f=<<END
+#     #{obj_arg.c_typename}* _c_#{param[1]};
+#     if (#{param[1]} == Qnil)
+#         _c_#{param[1]} = NULL;
+#     else {
+#         Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
+#     }
+# END
+#             else
+#               str << f=<<END
+#     #{obj_arg.c_typename}* _c_#{param[1]};
+#     Data_Get_Struct(#{param[1]}, #{obj_arg.c_typename}, _c_#{param[1]});
+# END
+#             end
+#           end
+#         end
+
+# from return type converstion
+#       elsif obj_arg = Valar.defined_object?(returns.name)
+#         if returns.nullable?
+#           f=<<END
+#     VALUE _rb_return;
+#     if (_c_return == NULL) {
+#         _rb_return = Qnil;
+#     }
+#     else {
+#         _rb_return = GOBJ2RVAL(_c_return);
+# //        _rb_return = Data_Wrap_Struct(rbc_#{obj_arg.underscore_typename}, 0, rb_#{obj_arg.underscore_typename}_destroy, _c_return);
+#     }
+# END
+#         else
+#           f=<<END
+#     VALUE _rb_return = GOBJ2RVAL(_c_return);
+# //    VALUE _rb_return = Data_Wrap_Struct(rbc_#{obj_arg.underscore_typename}, 0, rb_#{obj_arg.underscore_typename}_destroy, _c_return);
+# END
+#         end
+
+# from body
+#       elsif obj_arg = Valar.defined_object?(returns.name)
+#         f << <<END
+#     #{obj_arg.c_typename}* _c_return;
+#     _c_return = #{obj.underscore_typename}_#{name}(#{c_arg_list});
+# END

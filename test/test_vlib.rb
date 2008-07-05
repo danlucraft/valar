@@ -108,4 +108,9 @@ class TestVala < Test::Unit::TestCase
       v.throws_error(10)
     }
   end
+  
+#   def test_array_translation
+#     v = VLib.new
+#     assert_equal %w(a b c), v.returns_array
+#   end
 end

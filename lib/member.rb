@@ -37,20 +37,9 @@ END
     end
     
     def body
-      if RUBY_TYPES.include? returns.name
-        f=<<END
-    VALUE _rb_return =  #{obj.underscore_typename}->#{member};
+      f=<<END
+    #{returns.c_type} _c_return = #{obj.underscore_typename}->#{member};
 END
-      elsif obj_arg = Valar.defined_object?(returns.name)
-        f=<<END
-    #{obj_arg.c_typename}* _c_return;
-    _c_return = #{obj.underscore_typename}->#{member};
-END
-      else
-        f=<<END
-    #{Valar.vala2c(returns.name)} _c_return = #{obj.underscore_typename}->#{member};
-END
-      end
     end
   end
 end

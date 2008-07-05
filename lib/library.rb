@@ -79,6 +79,17 @@ class Valar
           if $2
             new_obj.sup_class = $3
           end
+          vt = ValaType.create(new_obj.vala_typename) do
+            ruby_type       new_obj.ruby_typename
+            c_type          new_obj.c_typename+"*"
+            underscore_type new_obj.underscore_typename
+            ruby_to_c do
+              "#{c} = _#{underscore_type.upcase}_SELF(#{ruby});"
+            end
+            c_to_ruby do
+              "#{ruby} = GOBJ2RVAL(#{c});"
+            end
+          end
           current_obj.objects << new_obj if current_obj
           current_obj = new_obj
           lib.objects << new_obj
@@ -89,7 +100,7 @@ class Valar
               current_obj.constructor_params << [ValaType.parse(type_def), arg_name]
             end
           end
-        when /public (\w+ )*([\w\.\?]+) (\w+) \((.*)\)( throws ((\w+)(, \w+)*))?;/
+        when /public (\w+ )*([\w\.\?\[\]]+) (\w+) \((.*)\)( throws ((\w+)(, \w+)*))?;/
           unless $1 and $1.include? "signal"
             keywords, return_type, name = $1, ValaType.parse($2), $3
             params, errors =  $4, ($6 ? $6.split(", ") : [])

@@ -118,9 +118,13 @@ public class VLib : Object {
 		}
 	}
 
-	// public string[] returns_array() {
+	// public string[] returns_array(int a, int b) {
 	// 	string[] arr = {"a", "b", "c"};
 	// 	return arr;
+	// }
+
+	// public void accepts_array(int[] foo, int a) {
+	// 	return;
 	// }
 }
 
