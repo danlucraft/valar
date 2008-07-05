@@ -92,7 +92,7 @@ class Valar
       self.instance_eval(&block) if block
     end
 
-    def return_args
+    def return_args(name)
       @ruby = name
       block = @type_builder.instance_variable_get(:@return_args)
       self.instance_eval(&block) if block
@@ -102,12 +102,16 @@ class Valar
     
     def c_to_ruby(where, from, to)
       @c, @ruby = from, to
-      self.instance_eval(&@type_builder.instance_variable_get(:@c_to_ruby)[where])
+      block = @type_builder.instance_variable_get(:@c_to_ruby)[where]
+      return "" unless block
+      self.instance_eval(&block)
     end
     
     def ruby_to_c(where, from, to)
       @ruby, @c = from, to
-      self.instance_eval(&@type_builder.instance_variable_get(:@ruby_to_c)[where])
+      block = @type_builder.instance_variable_get(:@ruby_to_c)[where]
+      return "" unless block
+      self.instance_eval(&block)
     end
 
     def forward_convertible?
@@ -287,9 +291,10 @@ class Valar
     ruby_to_c(:before) do
       <<-END
           int #{c}__length = RARRAY_LEN(#{ruby});
-          #{c} = malloc(#{c}__length);
-          for(int #{u1=Valar.uniqid} = 0; #{u1} < #{c}__length; #{u1}++) {
-             #{c}+#{u1} = rb_ary_entry(#{ruby}, (long) #{u1});
+          #{c} = malloc(#{c}__length*sizeof(char*));
+          long #{u1=Valar.uniqid};
+          for(#{u1} = 0; #{u1} < #{c}__length; #{u1}++) {
+             *(#{c}+#{u1}) = RSTRING_PTR(rb_ary_entry(#{ruby}, (long) #{u1}));
           }
       END
     end
@@ -307,6 +312,48 @@ class Valar
     c_to_ruby(:after) do
       <<-END
           #{ruby} = rb_ary_new2(#{ruby}__length);
+          long #{u1=Valar.uniqid};
+          for(#{u1} = 0; #{u1} < #{ruby}__length; #{u1}++) {
+              rb_ary_store(#{ruby}, #{u1}, rb_str_new2(#{c}[#{u1}]));
+          }
+      END
+    end
+  end
+
+  ValaType.create("int[]") do
+    ruby_type      "Array"
+    ruby_vala_type "Ruby.Array"
+    c_type         "gint*"
+    ruby_type_check ["T_ARRAY"], "expected an array of integers"
+    
+    ruby_to_c(:before) do
+      <<-END
+          int #{c}__length = RARRAY_LEN(#{ruby});
+          #{c} = malloc(#{c}__length*sizeof(gint));
+          long #{u1=Valar.uniqid};
+          for(#{u1} = 0; #{u1} < #{c}__length; #{u1}++) {
+             #{c}[#{u1}] = NUM2INT(rb_ary_entry(#{ruby}, (long) #{u1}));
+          }
+      END
+    end
+    
+    args       { "#{c}, #{c}__length" }
+    
+    c_to_ruby(:before) do 
+      <<-END
+          int #{ruby}__length;
+      END
+    end
+
+    return_args { "&#{ruby}__length" }
+    
+    c_to_ruby(:after) do
+      <<-END
+          #{ruby} = rb_ary_new2(#{ruby}__length);
+          long #{u1=Valar.uniqid};
+          for(#{u1} = 0; #{u1} < #{ruby}__length; #{u1}++) {
+              rb_ary_store(#{ruby}, #{u1}, INT2NUM(#{c}[#{u1}]));
+          }
       END
     end
   end

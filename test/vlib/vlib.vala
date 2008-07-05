@@ -118,14 +118,31 @@ public class VLib : Object {
 		}
 	}
 
-	// public string[] returns_array(int a, int b) {
-	// 	string[] arr = {"a", "b", "c"};
-	// 	return arr;
-	// }
+	public string[] returns_string_array() {
+		string[] arr = {"a", "b", "c"};
+		return arr;
+	}
 
-	// public void accepts_array(int[] foo, int a) {
-	// 	return;
-	// }
+	public int accepts_string_array(string[] foo) {
+		int i = 0;
+		foreach(string f in foo)
+			if (f.size() > 1)
+				i += 1;
+		return i;
+	}
+
+	public int[] returns_int_array() {
+		int[] arr = {1, 10, 100};
+		return arr;
+	}
+
+	public int accepts_int_array(int[] foo) {
+		int i = 0;
+		foreach(int f in foo)
+			if (f > 15)
+				i += 1;
+		return i;
+	}
 }
 
 errordomain IOError {

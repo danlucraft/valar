@@ -109,8 +109,15 @@ class TestVala < Test::Unit::TestCase
     }
   end
   
-#   def test_array_translation
-#     v = VLib.new
-#     assert_equal %w(a b c), v.returns_array
-#   end
+  def test_string_array_translation
+    v = VLib.new
+    assert_equal %w(a b c), v.returns_string_array
+    assert_equal 3, v.accepts_string_array(%w(aa bb c ddd e))
+  end
+  
+  def test_int_array_translation
+    v = VLib.new
+    assert_equal [1, 10, 100], v.returns_int_array
+    assert_equal 1, v.accepts_int_array([1, 10, 100])
+  end
 end

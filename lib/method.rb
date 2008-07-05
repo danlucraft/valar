@@ -135,6 +135,9 @@ END
     inner_error = NULL;
 END
       end
+      f << <<END
+    #{returns.c_to_ruby(:before, "_c_return", "_rb_return")}
+END
       if returns.name == "void"
         f << <<END
     #{obj.underscore_typename}_#{name}(#{c_arg_list});
@@ -184,9 +187,11 @@ END
     end
     
     def c_arg_list1
-      params.map do |type, name| 
+      s1 = params.map do |type, name| 
         type.args("_c_" + name) || "_c_#{name}"
       end.join(", ")
+      s2 = returns.return_args("_rb_return")
+      s1 + (s2 ? ", " + s2 : "")
     end
     
     def ctype?(type)
