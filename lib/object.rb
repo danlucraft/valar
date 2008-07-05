@@ -217,4 +217,11 @@ class String
       tr("-", "_").
       downcase
   end
+  
+  def errorcase
+    self.gsub(/([a-z\d])([A-Z])/,'\1_\2').
+      gsub(/([A-Z][A-Z])([A-Z])/,'\1_\2').
+      tr("-", "_").
+      upcase
+  end
 end

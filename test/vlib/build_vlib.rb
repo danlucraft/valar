@@ -13,7 +13,6 @@ FileUtils.cd "test/vlib" do
   end
   puts "linking vlib..."
   puts %x{gcc --shared -fPIC -o vlib.so $(pkg-config --cflags --libs gobject-2.0) vlib.c -I/usr/local/lib/ruby/1.8/i686-linux}
-  
 end
 
 puts "running VALAR..."

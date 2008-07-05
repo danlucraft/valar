@@ -101,4 +101,11 @@ class TestVala < Test::Unit::TestCase
     assert_equal "ö", v.get_unichar("höllo", 1)
     assert_equal "ööööö", v.set_unichar("ö", 5)
   end
+  
+  def test_errors
+    v = VLib.new
+    assert_raises(ValaError) {
+      v.throws_error(10)
+    }
+  end
 end

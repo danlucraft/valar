@@ -1,3 +1,7 @@
+
+require 'rubygems'
+require 'trollop'
+
 $: << File.dirname(__FILE__)
 require 'library'
 require 'object'
@@ -5,6 +9,7 @@ require 'method'
 require 'type'
 require 'member'
 require 'enum'
+require 'error'
 
 class Valar
   VERSION = '1.0.0'
@@ -101,13 +106,14 @@ class Valar
     VALA_TO_C[type] || (RUBY_TYPES.include?(type) ? "VALUE" : nil)
   end
   
-  def self.parse_file(filename)
+  def self.parse_file(filename, options)
     if File.extname(filename) == ".gidl"
       parse_gidl_file(filename)
     else
       parse_vapi_file(filename)
     end
     @library.print
+    @library.output_dir = options[:"output-dir"]||nil
     @library.output
   end
   

@@ -1,3 +1,8 @@
+#! /usr/bin/env ruby
+
 require "rexml/document"
 require File.dirname(__FILE__) + '/../lib/valar'
-Valar.parse_file(ARGV[0])
+options = Trollop.options do 
+  opt :"output-dir", "Output directory", :default => nil, :type => String
+end
+Valar.parse_file(ARGV[0], options)

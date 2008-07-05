@@ -102,5 +102,28 @@ public class VLib : Object {
 			s.append_unichar(uc);
 		return s.str;
 	}
+	
+	public void throws_error(int a) throws IOError {
+		if (true) {
+			throw new IOError.FILE_NOT_FOUND("Requested file could not be found.");
+		}	
+	}
+
+	public void catch_error(int a) {
+		try {
+			throws_error(a);
+		}
+		catch (IOError e) {
+			stdout.printf("caught error: %s\n", e.message);
+		}
+	}
+
+	// public string[] returns_array() {
+	// 	string[] arr = {"a", "b", "c"};
+	// 	return arr;
+	// }
 }
 
+errordomain IOError {
+	FILE_NOT_FOUND
+}

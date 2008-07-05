@@ -1,6 +1,6 @@
 class Valar
   class ValaLibrary
-    attr_accessor :name, :objects, :directory
+    attr_accessor :name, :objects, :directory, :header_files, :output_dir
     
     def initialize
       @objects = []
@@ -36,6 +36,7 @@ class Valar
     
     def self.new_from_vapi(filename)
       lib = ValaLibrary.new
+      lib.header_files = []
       vapi_src = File.read(filename)
       @dirname = File.dirname(filename)
       @basename = File.basename(filename)
@@ -48,6 +49,8 @@ class Valar
       while i < lines.length
         line = lines[i]
         case line
+        when /cheader_filename = "(\w+).h"/
+          lib.header_files << $1 unless lib.header_files.include? $1
         when /namespace (.*) \{/
           new_obj = ValaObject.new
           new_obj.name = $1
@@ -86,14 +89,15 @@ class Valar
               current_obj.constructor_params << [ValaType.parse(type_def), arg_name]
             end
           end
-        when /public (\w+ )*([\w\.\?]+) (\w+) \((.*)\);/
+        when /public (\w+ )*([\w\.\?]+) (\w+) \((.*)\)( throws ((\w+)(, \w+)*))?;/
           unless $1 and $1.include? "signal"
-            params = $4
-            keywords = $1
+            keywords, return_type, name = $1, ValaType.parse($2), $3
+            params, errors =  $4, ($6 ? $6.split(", ") : [])
             new_meth = ValaMethod.new
-            new_meth.name = $3
-            new_meth.returns = ValaType.parse($2)
+            new_meth.name = name
+            new_meth.returns = return_type
             new_meth.static = (keywords and keywords.include?("static"))
+            new_meth.throws = errors
             if params
               params.split(", ").each do |param_str|
                 type_def, arg_name = param_str.split(" ")
@@ -122,8 +126,20 @@ class Valar
           current_obj.functions << member
         when /^\s*\}$/
           current_obj = current_obj.outer_object
+        when /\{/
+          puts "skipping scope opening: '#{line.chomp}'"
+          count = 1
+          while count > 0
+            i += 1
+            line = lines[i]
+            if line =~ /\{/
+              count += 1
+            elsif line =~ /\}/
+              count -= 1
+            end
+          end
         when /\}/
-          puts "error unknown scope opening: '#{line.chomp}'"
+          puts "unexpected scope close '#{line.chomp}'"
           raise
         end
         i += 1
@@ -139,6 +155,9 @@ class Valar
         puts "#{obj.vala_typename}"
         obj.functions.sort_by{|m| m.name}.each do |meth|
           puts "  #{meth.convertible? ? "*" : "x"} #{meth.returns.name.ljust(max_type_width)}  #{meth.name.ljust(max_name_width)}  (#{meth.params.map{|a| "#{a[0].name} #{a[1]}"}.join ", "})"
+          if meth.throws.any?
+            puts "                      throws #{meth.throws.join(", ")}"
+          end
         end
         obj.members.sort_by{|m| m.name}.each do |mem|
           puts "  * #{mem.type.name.ljust(max_type_width)}  #{mem.name}"
@@ -147,15 +166,24 @@ class Valar
     end
     
     def output
-      File.open(@directory+"/#{@name}_rb.c", "w") do |fout|
+      File.open((@output_dir||@directory)+"/#{@name}_rb.c", "w") do |fout|
         fout.puts <<END
 #include "ruby.h"
 #include "rbgtk.h"
+END
 #include "#{@name}.h"
+        @header_files.each do |hf|
+          fout.puts <<END
+#include "#{hf}.h"
+END
+        end
+        fout.puts <<END
+static VALUE rb_vala_error;
 END
         @objects.each do |obj|
           obj.output_class_definition(fout) if obj.convertible?
         end
+        
         @objects.each do |obj|
           if obj.convertible?
             obj.output_method_definitions(fout)
@@ -165,6 +193,7 @@ END
         
         fout.puts <<END
 void Init_#{@name}_rb() {
+    rb_vala_error = rb_define_class("ValaError", rb_eval_string("Exception"));
 END
         @objects.sort_by{|o| o.vala_typename.length}.each do |obj|
           obj.output_definition(fout) if obj.convertible?

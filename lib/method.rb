@@ -1,6 +1,6 @@
 class Valar
   class ValaMethod
-    attr_accessor :name, :ruby_name, :params, :returns, :obj, :static
+    attr_accessor :name, :ruby_name, :params, :returns, :obj, :static, :throws
     
     def initialize
       @params = []
@@ -206,25 +206,48 @@ END
     end
     
     def body
+      f=""
+      if throws.any?
+        f << <<END
+    GError* inner_error;
+    inner_error = NULL;
+END
+      end
       if RUBY_TYPES.include? returns.name
-        f=<<END
+        f << <<END
     VALUE _rb_return = #{obj.underscore_typename}_#{name}(#{c_arg_list});
 END
       elsif returns.name == "void"
-        f=<<END
+        f << <<END
     #{obj.underscore_typename}_#{name}(#{c_arg_list});
 END
       elsif obj_arg = Valar.defined_object?(returns.name)
-        f=<<END
+        f << <<END
     #{obj_arg.c_typename}* _c_return;
     _c_return = #{obj.underscore_typename}_#{name}(#{c_arg_list});
 END
       else
-        f=<<END
+        f << <<END
     #{Valar.vala2c(returns.name)} _c_return;
     _c_return = #{obj.underscore_typename}_#{name}(#{c_arg_list});
 END
       end
+      if throws.any?
+        f << <<END
+    if (inner_error != NULL) {
+END
+        throws.each do |throw|
+          f << <<END
+        if (inner_error->domain == #{throw.errorcase}) {
+            rb_raise(rb_vala_error, "[#{throw}]: %s", inner_error->message);
+        }
+END
+        end
+        f << <<END
+    }
+END
+      end
+      f
     end
     
     def rb_arg_list
@@ -241,6 +264,9 @@ END
         end
       end
       str += c_arg_list1
+      if throws.any?
+        str += ", &inner_error"
+      end
       str
     end
     

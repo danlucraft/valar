@@ -1,7 +1,11 @@
 class Valar
   class ValaMemberSet < ValaMethod
-    attr_accessor :type, :member
-    
+    attr_accessor :type, :member 
+
+    def throws
+      []
+    end
+   
     def params
       [[type, member]]
     end
@@ -19,6 +23,10 @@ END
   
   class ValaMemberGet < ValaMethod
     attr_accessor :type, :member
+
+    def throws
+      []
+    end
     
     def params
       []
