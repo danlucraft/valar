@@ -119,6 +119,9 @@ class Valar
             new_meth.obj = current_obj
             current_obj.functions << new_meth
           end
+        when /public const ([\w\.\?]+) (\w+);/
+          new_const = Constant.new(ValaType.parse($1), $2, current_obj)
+          current_obj.constants << new_const
         when /public (\w+ )*([\w\.\?]+) (\w+) \{(.*)\}/
           # property - automatically handled by ruby-glib
         when /public (\w+ )*([\w\.\?]+) (\w+);/
@@ -211,6 +214,7 @@ void Init_#{@name}_rb() {
 END
         @objects.sort_by{|o| o.vala_typename.length}.each do |obj|
           obj.output_definition(fout) if obj.convertible?
+          obj.output_const_definitions(fout)
         end
         fout.puts "}\n"
       end     

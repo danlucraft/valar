@@ -120,4 +120,9 @@ class TestVala < Test::Unit::TestCase
     assert_equal [1, 10, 100], v.returns_int_array
     assert_equal 1, v.accepts_int_array([1, 10, 100])
   end
+  
+  def test_consts
+    assert_equal 1, VLib::FOO
+    assert_equal 2, VLib::BAR
+  end
 end

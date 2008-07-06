@@ -1,11 +1,12 @@
 class Valar
   class ValaObject
     attr_accessor :name, :functions, :outer_object, :abstract, :objects, :sup_class, :properties
-    attr_accessor :constructor_params, :members, :enums
+    attr_accessor :constructor_params, :members, :enums, :constants
     
     def initialize
       @functions, @objects, @properties = [], [], []
       @constructor_params, @members, @enums = [], [], []
+      @constants = []
     end
     
     def convertible?
@@ -149,6 +150,17 @@ END
 #define _#{underscore_typename.upcase}_SELF(s) #{underscore_typename.upcase}(RVAL2GOBJ(s))
 static VALUE rbc_#{underscore_typename};
 END
+    end
+    
+    def output_const_definitions(fout)
+      @constants.each do |const|
+        next unless const.convertible?
+        fout.puts <<END
+    VALUE _rb_#{const.c_typename.downcase};
+    #{const.type.c_to_ruby(:after, const.c_typename, "_rb_"+const.c_typename.downcase)}
+    rb_define_const(rbc_#{underscore_typename}, "#{const.name}", _rb_#{const.c_typename.downcase});
+END
+      end
     end
     
     def output_definition(fout)

@@ -143,6 +143,9 @@ public class VLib : Object {
 				i += 1;
 		return i;
 	}
+
+	public const int FOO = 1;
+	public const int BAR = 2;
 }
 
 errordomain IOError {

@@ -1,4 +1,5 @@
 
+ o constants
  o complex type conversions
  o iterators for array
  o Make use of the faster type checks FIXNUM_P.
