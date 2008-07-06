@@ -152,6 +152,7 @@ END
     end
     
     def output_definition(fout)
+      return if self.vala_typename == "Gtk"
       if abstract
         if outer_object
           fout.puts <<END

@@ -191,7 +191,7 @@ END
 END
         end
         fout.puts <<END
-static VALUE rb_vala_error;
+static VALUE rb_vala_error, rbc_gtk;
 END
         @objects.each do |obj|
           obj.output_class_definition(fout) if obj.convertible?
@@ -207,6 +207,7 @@ END
         fout.puts <<END
 void Init_#{@name}_rb() {
     rb_vala_error = rb_define_class("ValaError", rb_eval_string("Exception"));
+    rbc_gtk = rb_eval_string("Gtk");
 END
         @objects.sort_by{|o| o.vala_typename.length}.each do |obj|
           obj.output_definition(fout) if obj.convertible?
