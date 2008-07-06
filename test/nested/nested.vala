@@ -87,4 +87,7 @@ namespace Nested {
 	public enum Colour {
 		BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
 	}
+
+	public class MyTextView : Gtk.TextView {
+	}
 }

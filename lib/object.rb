@@ -9,7 +9,7 @@ class Valar
     end
     
     def convertible?
-      descends_from? "GLib.Object" or abstract
+      descends_from? "GLib.Object" or descends_from? "Gtk.Object" or abstract
     end
     
     def object(name)
@@ -30,7 +30,14 @@ class Valar
     end
     
     def descends_from?(klass)
-      sup_class and (sup_class == klass or Valar.defined_object?(sup_class).descends_from?(klass))
+      return false unless sup_class
+      return true if sup_class == klass
+      sup_object = Valar.defined_object?(sup_class)
+      if sup_object
+        sup_object.descends_from?(klass)
+      else
+        false
+      end
     end
     
     def vala_typename
@@ -115,7 +122,17 @@ END
 
 static VALUE #{underscore_typename}_initialize(VALUE self#{@constructor_params.empty? ? "" : ", "}#{rb_arg_list}) {
 #{constructor_type_conversions}
+END
+      if descends_from?("Gtk.Object")
+        fout.puts <<END
+    RBGTK_INITIALIZE(self, #{underscore_typename}_new (#{constructor_arg_list}));
+END
+      elsif descends_from?("GLib.Object")
+        fout.puts <<END
     G_INITIALIZE(self, #{underscore_typename}_new (#{constructor_arg_list}));
+END
+      end
+      fout.puts <<END
     return Qnil;
 }
 

@@ -35,22 +35,23 @@ class Valar
   end
   
   def self.parse_file(filename, options)
-    if File.extname(filename) == ".gidl"
-      parse_gidl_file(filename)
+    if options[:deps]
+      deps = options[:deps].split(",").map{|l| l.strip}
+      puts "dependencies: #{options[:deps]} #{deps.inspect}"
     else
-      parse_vapi_file(filename)
+      deps = []
     end
+    deps.each do |dep|
+      parse_vapi_file("/usr/local/share/vala/vapi/#{dep}.vapi")
+    end
+    @library = parse_vapi_file(filename)
     @library.print
     @library.output_dir = options[:"output-dir"]||nil
     @library.output
   end
-  
-  def self.parse_gidl_file(filename)
-    @library = ValaLibrary.new_from_gidl(filename)
-  end
-  
+
   def self.parse_vapi_file(filename)
     puts "loading #{ARGV[0]}"
-    @library = ValaLibrary.new_from_vapi(filename)
+    ValaLibrary.new_from_vapi(filename)
   end
 end

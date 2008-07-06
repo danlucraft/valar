@@ -72,13 +72,14 @@ class Valar
             line = lines[i]
           end
           current_obj.enums << new_enum
-        when /public class (\w+)( : ([\w\.]+))? \{/
+        when /public class (\w+)( : ([\w\.]+)((, ([\w\.]+))*)?)? \{/
           new_obj = ValaObject.new
           new_obj.name = $1
           new_obj.outer_object = current_obj
           if $2
             new_obj.sup_class = $3
           end
+#          puts "new type: #{new_obj.vala_typename}"
           vt = ValaType.create(new_obj.vala_typename) do
             ruby_type       new_obj.ruby_typename
             c_type          new_obj.c_typename+"*"
@@ -137,10 +138,11 @@ class Valar
           current_obj.functions << member
         when /^\s*\}$/
           current_obj = current_obj.outer_object
+        when /\{.*\}/
         when /\{/
           puts "skipping scope opening: '#{line.chomp}'"
           count = 1
-          while count > 0
+          while count > 0 and line
             i += 1
             line = lines[i]
             if line =~ /\{/
