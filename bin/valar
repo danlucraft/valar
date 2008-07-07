@@ -6,6 +6,7 @@ require File.dirname(__FILE__) + '/../lib/valar'
 options = Trollop.options do 
   opt :"output-dir", "Output directory", :default => nil, :type => String
   opt :deps, "Dependencies", :default => ""
+  opt :vapidirs, "VAPI source directories, comma separated", :default => ""
 end
 
 Valar.parse_file(ARGV[0], options)

@@ -169,6 +169,15 @@ class Valar
       @objects.each do |obj|
         next unless obj.convertible?
         puts "#{obj.vala_typename}"
+        unless obj.constructor_params.empty?
+          c = obj.constructor_params.all? {|p| p[0].forward_convertible? }
+          Kernel.print "  #{c ? "*" : "x"} #{" ".ljust(max_type_width)}  #{obj.name.ljust(max_name_width)}  ("
+          ps = obj.constructor_params.map do |type, name|
+            "#{type.name} #{name}"
+          end.join(", ")
+          Kernel.print(ps)
+          puts ")"
+        end
         obj.functions.sort_by{|m| m.name}.each do |meth|
           puts "  #{meth.convertible? ? "*" : "x"} #{meth.returns.name.ljust(max_type_width)}  #{meth.name.ljust(max_name_width)}  (#{meth.params.map{|a| "#{a[0].name} #{a[1]}"}.join ", "})"
           if meth.throws.any?
@@ -177,6 +186,9 @@ class Valar
         end
         obj.members.sort_by{|m| m.name}.each do |mem|
           puts "  * #{mem.type.name.ljust(max_type_width)}  #{mem.name}"
+        end
+        obj.constants.sort_by{|m| m.name}.each do |constant|
+          puts "  #{constant.convertible? ? "*" : "x"} #{constant.type.name.ljust(max_type_width)}  #{constant.name}" 
         end
       end
     end

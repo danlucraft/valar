@@ -1,5 +1,6 @@
 
- o constants
+ o fix dependencies
+ o fix construction
  o complex type conversions
  o iterators for array
  o Make use of the faster type checks FIXNUM_P.
@@ -9,6 +10,7 @@
    so learn about that.
  o Convert Structs.
 
+ x constants
  x unichar conversions
  x signals
  x embedding example

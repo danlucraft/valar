@@ -43,7 +43,15 @@ class Valar
       deps = []
     end
     deps.each do |dep|
-      parse_vapi_file("/usr/local/share/vala/vapi/#{dep}.vapi")
+      if File.exist? "/usr/local/share/vala/vapi/#{dep}.vapi"
+        parse_vapi_file("/usr/local/share/vala/vapi/#{dep}.vapi")
+      else
+        options[:vapidirs].split(",").each do |vdir|
+          if File.exist? vdir+"/#{dep}.vapi"
+            parse_vapi_file(vdir+"/#{dep}.vapi")
+          end
+        end
+      end
     end
     @library = parse_vapi_file(filename)
     @library.print
