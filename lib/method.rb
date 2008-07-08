@@ -181,7 +181,10 @@ END
       end
       str += c_arg_list1
       if throws.any?
-        str += ", &inner_error"
+        if str.length > 0
+          str += ", "
+        end
+        str += "&inner_error"
       end
       str
     end
@@ -190,8 +193,8 @@ END
       s1 = params.map do |type, name| 
         type.args("_c_" + name) || "_c_#{name}"
       end.join(", ")
-      s2 = returns.return_args("_rb_return")
-      s1 + (s2 ? ", " + s2 : "")
+      s2 = (returns.return_args("_rb_return") || "")
+      s1 + (((s1.length > 0 or !static) and s2.length > 0) ? ", " : "") + s2 
     end
     
     def ctype?(type)
