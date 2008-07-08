@@ -19,9 +19,13 @@ class Valar
       out.puts footer
     end
     
+    def returns
+      ValaType.parse(@returns)
+    end
+    
     def convertible?
       returns.backward_convertible? and 
-        params.all? {|param| param[0].forward_convertible?}
+        params.all? {|param| param.type.forward_convertible?}
     end
     
     def header
@@ -56,13 +60,13 @@ END
     def type_checks
       str = ""
       params.each do |param|
-        type = param[0]
-        varname = param[1]
+        type = param.type
+        varname = param.name
         ctypes, message = type.ruby_type_check
         next unless ctypes
         if type.nullable?
           condition = ctypes.map {|ctype| "TYPE(#{varname}) != #{ctype}"}.join(" && ")
-          condition += " && #{param[1]} != Qnil"
+          condition += " && #{param.name} != Qnil"
           str << f=<<END
     if (#{condition}) {
         VALUE rb_arg_error = rb_eval_string("ArgumentError");
@@ -70,7 +74,7 @@ END
     }
 END
         else
-          condition = ctypes.map {|ctype| "TYPE(#{param[1]}) != #{ctype}"}.join(" && ")
+          condition = ctypes.map {|ctype| "TYPE(#{param.name}) != #{ctype}"}.join(" && ")
           str << f=<<END
     if (#{condition}) {
         VALUE rb_arg_error = rb_eval_string("ArgumentError");
@@ -85,7 +89,7 @@ END
     def argument_type_conversions
       str = ""
       params.each do |param|
-        type, varname = *param
+        type, varname = param.type, param.name
         if type.nullable?
           str << f=<<END
     #{type.c_type} _c_#{varname};
@@ -167,7 +171,7 @@ END
     end
     
     def rb_arg_list
-      params.map {|a| "VALUE "+a[1] }.join(", ")
+      params.map {|param| "VALUE "+param.name }.join(", ")
     end
     
     def c_arg_list
@@ -190,8 +194,8 @@ END
     end
     
     def c_arg_list1
-      s1 = params.map do |type, name| 
-        type.args("_c_" + name) || "_c_#{name}"
+      s1 = params.map do |param| 
+        param.type.args("_c_" + param.name) || "_c_#{param.name}"
       end.join(", ")
       s2 = (returns.return_args("_rb_return") || "")
       s1 + (((s1.length > 0 or !static) and s2.length > 0) ? ", " : "") + s2 
@@ -207,7 +211,7 @@ END
       return_type = nil
       el.elements.each("return-type") {|rt| return_type = rt.attributes["type"]}
       el.elements.each("parameters/parameter") do |p1|
-        obj.params << [p1.attributes["type"], p1.attributes["name"]]
+        obj.params << Param.new(p1.attributes["type"], p1.attributes["name"])
       end
       obj.name = el.attributes["name"]
       obj.symbol = el.attributes["symbol"]

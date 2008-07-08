@@ -7,10 +7,14 @@ class Valar
     end
    
     def params
-      [[type, member]]
+      [Param.new(@type, member)]
     end
     
     def returns
+      ValaType.parse("void")
+    end
+    
+    def type
       ValaType.parse("void")
     end
     
@@ -33,7 +37,11 @@ END
     end
     
     def returns
-      @type
+      ValaType.parse(@type)
+    end
+    
+    def type
+      ValaType.parse(@type)
     end
     
     def body

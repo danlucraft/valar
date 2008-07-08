@@ -20,8 +20,12 @@ class Valar
       @outer_object.c_typename.upcase + "_" + @name
     end
     
+    def type
+      ValaType.parse(@type)
+    end
+    
     def convertible?
-      @type.backward_convertible?
+      type.backward_convertible?
     end
   end
 end

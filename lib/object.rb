@@ -72,7 +72,7 @@ class Valar
     def constructor_type_conversions
       str = ""
       @constructor_params.each do |param|
-        type, varname = *param
+        type, varname = param.type, param.name
         if type.nullable?
           str << f=<<END
     #{type.c_type} _c_#{varname};
@@ -93,11 +93,11 @@ END
     end
     
     def constructor_arg_list
-      @constructor_params.map {|type, name| "_c_"+name}.join(", ")
+      @constructor_params.map {|param| "_c_"+param.name}.join(", ")
     end
     
     def rb_arg_list
-      @constructor_params.map {|a| "VALUE "+a[1] }.join(", ")
+      @constructor_params.map {|param| "VALUE "+param.name }.join(", ")
     end
     
     def output_method_definitions(fout)

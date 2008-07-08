@@ -19,6 +19,7 @@ require 'member'
 require 'enum'
 require 'error'
 require 'constant'
+require 'param'
 
 class Valar
   VERSION = '1.0.0'

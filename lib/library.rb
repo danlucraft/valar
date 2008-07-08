@@ -79,7 +79,6 @@ class Valar
           if $2
             new_obj.sup_class = $3
           end
-#          puts "new type: #{new_obj.vala_typename}"
           vt = ValaType.create(new_obj.vala_typename) do
             ruby_type       new_obj.ruby_typename
             c_type          new_obj.c_typename+"*"
@@ -98,12 +97,12 @@ class Valar
           if $1 != ""
             $1.split(", ").each do |param_str|
               type_def, arg_name = param_str.split(" ")
-              current_obj.constructor_params << [ValaType.parse(type_def), arg_name]
+              current_obj.constructor_params << Param.new(type_def, arg_name)
             end
           end
         when /public (\w+ )*([\w\.\?\[\]]+) (\w+) \((.*)\)( throws ((\w+)(, \w+)*))?;/
           unless $1 and $1.include? "signal"
-            keywords, return_type, name = $1, ValaType.parse($2), $3
+            keywords, return_type, name = $1, $2, $3
             params, errors =  $4, ($6 ? $6.split(", ") : [])
             new_meth = ValaMethod.new
             new_meth.name = name
@@ -113,14 +112,14 @@ class Valar
             if params
               params.split(", ").each do |param_str|
                 type_def, arg_name = param_str.split(" ")
-                new_meth.params << [ValaType.parse(type_def), arg_name]
+                new_meth.params << Param.new(type_def, arg_name)
               end
             end
             new_meth.obj = current_obj
             current_obj.functions << new_meth
           end
         when /public const ([\w\.\?]+) (\w+);/
-          new_const = Constant.new(ValaType.parse($1), $2, current_obj)
+          new_const = Constant.new($1, $2, current_obj)
           current_obj.constants << new_const
         when /public (\w+ )*([\w\.\?]+) (\w+) \{(.*)\}/
           # property - automatically handled by ruby-glib
@@ -128,14 +127,14 @@ class Valar
           member = ValaMemberGet.new
           member.name = "get_#{$3}"
           member.ruby_name = $3
-          member.type = ValaType.parse($2)
+          member.type = $2
           member.member = $3
           member.obj = current_obj
           current_obj.functions << member
           member = ValaMemberSet.new
           member.name = "set_#{$3}"
           member.ruby_name = "#{$3}="
-          member.type = ValaType.parse($2)
+          member.type = $2
           member.member = $3
           member.obj = current_obj
           current_obj.functions << member
@@ -170,16 +169,16 @@ class Valar
         next unless obj.convertible?
         puts "#{obj.vala_typename}"
         unless obj.constructor_params.empty?
-          c = obj.constructor_params.all? {|p| p[0].forward_convertible? }
+          c = obj.constructor_params.all? {|p| p.type.forward_convertible? }
           Kernel.print "  #{c ? "*" : "x"} #{" ".ljust(max_type_width)}  #{obj.name.ljust(max_name_width)}  ("
-          ps = obj.constructor_params.map do |type, name|
-            "#{type.name} #{name}"
+          ps = obj.constructor_params.map do |param|
+            "#{param.type.name} #{param.name}"
           end.join(", ")
           Kernel.print(ps)
           puts ")"
         end
         obj.functions.sort_by{|m| m.name}.each do |meth|
-          puts "  #{meth.convertible? ? "*" : "x"} #{meth.returns.name.ljust(max_type_width)}  #{meth.name.ljust(max_name_width)}  (#{meth.params.map{|a| "#{a[0].name} #{a[1]}"}.join ", "})"
+          puts "  #{meth.convertible? ? "*" : "x"} #{meth.returns.name.ljust(max_type_width)}  #{meth.name.ljust(max_name_width)}  (#{meth.params.map{|p| "#{p.type.name} #{p.name}"}.join ", "})"
           if meth.throws.any?
             puts "                      throws #{meth.throws.join(", ")}"
           end
