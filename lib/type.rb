@@ -315,6 +315,7 @@ class Valar
           long #{u1=Valar.uniqid};
           for(#{u1} = 0; #{u1} < #{ruby}__length; #{u1}++) {
               rb_ary_store(#{ruby}, #{u1}, rb_str_new2(#{c}[#{u1}]));
+              g_free(#{c}[#{u1}]);
           }
       END
     end
