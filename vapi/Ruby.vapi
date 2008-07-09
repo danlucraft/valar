@@ -117,7 +117,7 @@ namespace Ruby {
 	public static void init_loadpath();
 	public static void script(string name);
 	[CCode (cname = "rb_eval_string")]
-	public static void eval(string code);
+	public static Ruby.Value eval(string code);
 	[CCode (cname = "rb_require")]
 	public static Ruby.Bool require(string filename);
 	[CCode (cname = "rb_class_new_instance")]
