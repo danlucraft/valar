@@ -43,6 +43,26 @@ class Valar
         @c_type = val
       end
       
+      def g_type(val)
+        @g_type = val
+      end
+      
+      def g_type_to_pointer(val)
+        @g_type_to_pointer = val
+      end
+      
+      def g_pointer_to_type(val)
+        @g_pointer_to_type = val
+      end
+      
+      def ref_func(val)
+        @ref_func = val
+      end
+      
+      def unref_func(val)
+        @unref_func = val
+      end
+      
       def ruby_type_check(type_check_types, type_check_message)
         @type_check_types = type_check_types
         @type_check_message = type_check_message
@@ -80,10 +100,30 @@ class Valar
     def c_type
       @type_builder.instance_variable_get(:@c_type)
     end
+
+    def g_type
+      @type_builder.instance_variable_get(:@g_type)
+    end
+    
+    def g_pointer_to_type
+      @type_builder.instance_variable_get(:@g_pointer_to_type)
+    end
+    
+    def g_type_to_pointer
+      @type_builder.instance_variable_get(:@g_type_to_pointer)
+    end
     
     def ruby_type_check
       return @type_builder.instance_variable_get(:@type_check_types),
              @type_builder.instance_variable_get(:@type_check_message)
+    end
+    
+    def ref_func
+      @type_builder.instance_variable_get(:@ref_func)
+    end
+    
+    def unref_func
+      @type_builder.instance_variable_get(:@unref_func)
     end
     
     def args(name)
@@ -123,6 +163,14 @@ class Valar
     end
 
     def self.parse(string)
+      if string.include? "<"
+        case string
+        when /Gee.ArrayList<(.*)>/
+          type = ArrayListType.new(parse($1))
+          type.name = string
+          return ValaTypeInstance.new(type, false)
+        end
+      end
       if string[-1..-1] == "?"
         type = ValaType.find_type(string[0..-2])
         unless type
@@ -201,6 +249,78 @@ class Valar
     end
   end
   
+  class ArrayListType < ValaType
+    def initialize(parameter_type)
+      @parameter_type = parameter_type
+    end
+    
+    def forward_convertible?
+      @parameter_type.forward_convertible?
+    end
+    
+    def backward_convertible?
+      @parameter_type.backward_convertible?
+    end
+    
+    def c_type
+      "GeeArrayList*"
+    end
+    
+    def ruby_type
+      "Array"
+    end
+
+    def ruby_type_check 
+      return ["T_ARRAY"], "expected an array"
+    end
+    
+    def c_to_ruby(where, c, ruby)
+      case where
+      when :before
+        nil
+      when :after
+      <<END
+    int it_#{u1 = Valar.uniqid};
+    #{ruby} = rb_ary_new2((long) gee_collection_get_size (GEE_COLLECTION (#{c})));
+    for (it_#{u1} = 0; it_#{u1} < gee_collection_get_size (GEE_COLLECTION (#{c})); it_#{u1} = it_#{u1} + 1) {
+        #{@parameter_type.c_type} i_#{u2 = Valar.uniqid};
+        i_#{u2} = #{@parameter_type.g_pointer_to_type} (gee_list_get (GEE_LIST (#{c}), it_#{u1}));
+        VALUE #{@parameter_type.c_to_ruby(:after, "i_"+u2, "rb_i"+u2)}
+        rb_ary_store (#{ruby}, it_#{u1}, rb_i#{u2});
+    }
+END
+      end
+    end
+    
+    def ruby_to_c(where, ruby, c)
+      case where
+      when :before
+        if Valar.defined_object?(@parameter_type.name)
+          ref_func = "((GBoxedCopyFunc) (g_object_ref))"
+          unref_func = "g_object_unref"
+        else
+          ref_func = @parameter_type.ref_func
+          unref_func = @parameter_type.unref_func
+        end
+        <<END
+    int len_#{u1=Valar.uniqid} = RARRAY_LEN(#{ruby});
+    _c_#{ruby} = gee_array_list_new (#{@parameter_type.g_type}, #{ref_func}, #{unref_func}, g_direct_equal);
+    {
+        gint i;
+        i = 0;
+        for (; i < len_#{u1}; i++) {
+            VALUE _rb_el = rb_ary_entry(#{ruby}, (long) i);
+            #{@parameter_type.c_type} #{@parameter_type.ruby_to_c(:before, "_rb_el", "_c_el")}
+            gee_collection_add (GEE_COLLECTION (_c_#{ruby}), #{@parameter_type.g_type_to_pointer}(_c_el));
+        }
+    }
+END
+      when :after
+        nil
+      end
+    end
+  end
+  
   ValaType.create("void") do
     ruby_type       "NilClass"
     c_type          "void"
@@ -213,6 +333,11 @@ class Valar
     ruby_vala_type  "Ruby.Int"
     c_type          "int"
     ruby_type_check ["T_FIXNUM"], "expected a small integer"
+    g_type          "G_TYPE_INT"
+    g_type_to_pointer "GINT_TO_POINTER"
+    g_pointer_to_type "GPOINTER_TO_INT"
+    ref_func        "NULL"
+    unref_func      "NULL"
     
     c_to_ruby { "#{ruby} = INT2FIX(#{c});"       }
     ruby_to_c { "#{c} = FIX2INT(#{ruby});"  }
@@ -223,6 +348,8 @@ class Valar
     ruby_vala_type  "Ruby.Int"
     c_type          "long"
     ruby_type_check ["T_FIXNUM"], "expected a small integer"
+    ref_func        "NULL"
+    unref_func      "NULL"
     
     c_to_ruby { "#{ruby} = LONG2FIX(#{c});"       }
     ruby_to_c { "#{c} = FIX2LONG(#{ruby});"  }
@@ -243,6 +370,11 @@ class Valar
     ruby_vala_type  "Ruby.String"
     c_type          "char *"
     ruby_type_check ["T_STRING"], "expected a string"
+    g_type          "G_TYPE_STRING"
+    ref_func        "((GBoxedCopyFunc) (g_strdup))"
+    unref_func      "g_free"
+    g_type_to_pointer ""
+    g_pointer_to_type "(char *)"
     
     c_to_ruby { "#{ruby} = rb_str_new2(#{c});" }
     ruby_to_c { "#{c} = STR2CSTR(#{ruby});"    }
@@ -397,4 +529,5 @@ class Valar
   ValaType.create_vala_ruby_type "Ruby.Float" do
     ruby_type_check ["T_FLOAT"], "expected a Float"
   end
+  
 end

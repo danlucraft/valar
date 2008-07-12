@@ -83,6 +83,8 @@ class Valar
             ruby_type       new_obj.ruby_typename
             c_type          new_obj.c_typename+"*"
             underscore_type new_obj.underscore_typename
+            g_type          new_obj.g_typename
+            
             ruby_to_c do
               "#{c} = _#{underscore_type.upcase}_SELF(#{ruby});"
             end
@@ -100,7 +102,7 @@ class Valar
               current_obj.constructor_params << Param.new(type_def, arg_name)
             end
           end
-        when /public (\w+ )*([\w\.\?\[\]]+) (\w+) \((.*)\)( throws ((\w+)(, \w+)*))?;/
+        when /public (\w+ )*([\w\.\?\[\]<>]+) (\w+) \((.*)\)( throws ((\w+)(, \w+)*))?;/
           unless $1 and $1.include? "signal"
             keywords, return_type, name = $1, $2, $3
             params, errors =  $4, ($6 ? $6.split(", ") : [])

@@ -1,5 +1,6 @@
 
 using GLib;
+using Gee;
 
 public class VLib : Object {
     public void hello() {
@@ -146,6 +147,58 @@ public class VLib : Object {
 
 	public const int FOO = 1;
 	public const int BAR = 2;
+	
+	public ArrayList<int> returns_int_al(int a) {
+		var al = new ArrayList<int>();
+		for (int i = 0; i < a; i++) {
+			al.add(a);
+		}
+		return al;
+	}
+
+	public int accepts_int_al(ArrayList<int> al) {
+		int n = 0;
+		foreach (int a in al) {
+			n += a;
+		}
+		return n;
+	}
+
+	public static int accepts_array_of_objects(ArrayList<VLib> vls) {
+		int i = 0;
+		foreach (var v in vls) {
+			i += v.anint;
+		}
+		return i;
+	}
+
+	public long accepts_string_al(ArrayList<string> al) {
+		long n = 0;
+		foreach (string s in al)
+			n += s.size();
+		return n;
+	}
+
+	public ArrayList<string> returns_string_al(string s, string sep) {
+		var al = new ArrayList<string>();
+		foreach (string s in s.split(sep))
+			al.add(s);
+		return al;
+	}
+
+	public static void make_string_al(){
+		var al = new ArrayList<string>();
+		al.add("stringas");
+	}
+
+	public static int scan_string_al(ArrayList<string> al) {
+		int n = 0;
+		foreach (string s in al) {
+			n += (int) s.size();
+		}
+		return n;
+	}
+
 }
 
 errordomain IOError {

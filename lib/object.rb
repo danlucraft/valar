@@ -57,6 +57,14 @@ class Valar
       make_name("_") {|name| name.underscore }
     end
     
+    def g_typename
+      if outer_object
+        outer_object.underscore_typename.upcase + "_TYPE_" + name.upcase
+      else
+        "TYPE_"+name.upcase
+      end
+    end
+    
     def self.new_from_xml(el)
       obj = ValaObject.new
       obj.name = el.attributes["name"]

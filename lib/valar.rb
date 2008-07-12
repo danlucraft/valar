@@ -1,4 +1,5 @@
 
+require 'pp'
 require 'rubygems'
 require 'trollop'
 
@@ -6,7 +7,7 @@ class Valar
   def self.uniqid
     @uniqid ||= 0
     @uniqid += 1
-    "valar__#{@uniqid}"
+    "val#{@uniqid}"
   end
 end
 

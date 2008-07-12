@@ -125,4 +125,37 @@ class TestVala < Test::Unit::TestCase
     assert_equal 1, VLib::FOO
     assert_equal 2, VLib::BAR
   end
+  
+  def test_returns_array_list_int
+    assert_equal [], VLib.new.returns_int_al(0)
+    assert_equal [3, 3, 3], VLib.new.returns_int_al(3)
+  end
+  
+  def test_accepts_array_list_int
+    assert_equal 10, VLib.new.accepts_int_al([1, 2, 3, 4])
+  end
+  
+  def test_type_check_for_array_list
+    assert_raises(ArgumentError) {
+      VLib.new.accepts_int_al(6)
+    }
+  end
+  
+  def test_accepts_vlib_array_list
+    v1 = VLib.new
+    v1.anint = 1
+    v2 = VLib.new
+    v2.anint = 10
+    v3 = VLib.new
+    v3.anint = 20
+    assert_equal 31, VLib.accepts_array_of_objects([v1, v2, v3])
+  end
+  
+  def test_accepts_string_array_list
+    assert_equal 10, VLib.new.accepts_string_al(%w(hi ho hum tum))
+  end
+  
+  def test_returns_string_array_list
+    assert_equal %w(tic tac toe), VLib.new.returns_string_al("tic-tac-toe", "-")
+  end
 end
