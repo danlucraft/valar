@@ -158,4 +158,27 @@ class TestVala < Test::Unit::TestCase
   def test_returns_string_array_list
     assert_equal %w(tic tac toe), VLib.new.returns_string_al("tic-tac-toe", "-")
   end
+  
+  def test_member_int
+    v = VLib.new
+    v.memberint = 121
+    assert_equal 121, v.memberint
+  end
+  
+  def test_member_string
+    v = VLib.new
+    v.memberstring = "as"
+    assert_equal "as", v.memberstring
+  end
+  
+  def test_member_array_list
+    v = VLib.new
+    v.member_sal = %w(tic tac toe)
+    assert_equal %w(tic tac toe), v.member_sal
+  end
+  
+  def test_static_member_string
+    VLib.static_memberstring = "asdf"
+    assert_equal "asdf", VLib.static_memberstring
+  end
 end

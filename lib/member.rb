@@ -1,3 +1,4 @@
+
 class Valar
   class ValaMemberSet < ValaMethod
     attr_accessor :type, :member 
@@ -20,11 +21,11 @@ class Valar
     
     def body
       f=<<END
-    #{obj.underscore_typename}->#{member} = #{c_arg_list1};
+    #{obj.underscore_typename}->#{member} = #{c_arg_list1};  // ValaMemberSet
 END
     end
   end
-  
+
   class ValaMemberGet < ValaMethod
     attr_accessor :type, :member
 
@@ -46,7 +47,23 @@ END
     
     def body
       f=<<END
-    #{returns.c_type} _c_return = #{obj.underscore_typename}->#{member};
+    #{returns.c_type} _c_return = #{obj.underscore_typename}->#{member}; // ValaMemberGet
+END
+    end
+  end
+
+  class StaticMemberSet < ValaMemberSet
+    def body
+      f==<<END
+    #{obj.underscore_typename}_#{member} = #{c_arg_list1}; // StaticMemberSet
+END
+    end
+  end
+  
+  class StaticMemberGet < ValaMemberGet
+    def body
+      f=<<END
+    #{returns.c_type} _c_return = #{obj.underscore_typename}_#{member}; // StaticMemberGet
 END
     end
   end

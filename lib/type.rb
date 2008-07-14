@@ -377,7 +377,7 @@ END
     g_pointer_to_type "(char *)"
     
     c_to_ruby { "#{ruby} = rb_str_new2(#{c});" }
-    ruby_to_c { "#{c} = STR2CSTR(#{ruby});"    }
+    ruby_to_c { "#{c} = g_strdup(STR2CSTR(#{ruby}));"    }
   end
   
   ValaType.create("bool") do

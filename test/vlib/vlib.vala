@@ -80,13 +80,6 @@ public class VLib : Object {
 			return true;
 	}
 
-// 	public static int iterator_length(Ruby.Array rba) {
-// 		int i = 0;
-// 		foreach(Ruby.Value obj in rba)
-// 			i += 1;
-// 		return i;
-// 	}
-
 	public signal void sig_1(int a);
 
 	public void trigger_sig_1(int a) {
@@ -199,6 +192,15 @@ public class VLib : Object {
 		return n;
 	}
 
+	public int memberint;
+	public string memberstring;
+	public ArrayList<string> member_sal;
+	public static string static_memberstring;
+
+	public void accesses_static_member() {
+		VLib.static_memberstring = "asd";
+		stdout.printf("sms: %s\n", VLib.static_memberstring);
+	}
 }
 
 errordomain IOError {

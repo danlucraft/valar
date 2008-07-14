@@ -125,21 +125,33 @@ class Valar
           current_obj.constants << new_const
         when /public (\w+ )*([\w\.\?]+) (\w+) \{(.*)\}/
           # property - automatically handled by ruby-glib
-        when /public (\w+ )*([\w\.\?]+) (\w+);/
-          member = ValaMemberGet.new
-          member.name = "get_#{$3}"
-          member.ruby_name = $3
-          member.type = $2
-          member.member = $3
-          member.obj = current_obj
-          current_obj.functions << member
-          member = ValaMemberSet.new
-          member.name = "set_#{$3}"
-          member.ruby_name = "#{$3}="
-          member.type = $2
-          member.member = $3
-          member.obj = current_obj
-          current_obj.functions << member
+        when /public (\w+ )*([\w\.\?\[\]<>]+) (\w+);/
+          p $1
+          p $2
+          p line
+          if ($1||"").include? "static"
+            p :staticmember
+            p $3
+            memberg = StaticMemberGet.new
+            members = StaticMemberSet.new
+          else
+            p :nonstaticmember
+            p $3
+            memberg = ValaMemberGet.new
+            members = ValaMemberSet.new
+          end
+          memberg.name = "get_#{$3}"
+          memberg.ruby_name = $3
+          memberg.type = $2
+          memberg.member = $3
+          memberg.obj = current_obj
+          current_obj.functions << memberg
+          members.name = "set_#{$3}"
+          members.ruby_name = "#{$3}="
+          members.type = $2
+          members.member = $3
+          members.obj = current_obj
+          current_obj.functions << members
         when /^\s*\}$/
           current_obj = current_obj.outer_object
         when /\{.*\}/
@@ -185,9 +197,9 @@ class Valar
             puts "                      throws #{meth.throws.join(", ")}"
           end
         end
-        obj.members.sort_by{|m| m.name}.each do |mem|
-          puts "  * #{mem.type.name.ljust(max_type_width)}  #{mem.name}"
-        end
+#         obj.members.sort_by{|m| m.name}.each do |mem|
+#           puts "  * #{mem.type.name.ljust(max_type_width)}  #{mem.name}"
+#         end
         obj.constants.sort_by{|m| m.name}.each do |constant|
           puts "  #{constant.convertible? ? "*" : "x"} #{constant.type.name.ljust(max_type_width)}  #{constant.name}" 
         end
