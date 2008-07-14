@@ -196,11 +196,7 @@ public class VLib : Object {
 	public string memberstring;
 	public ArrayList<string> member_sal;
 	public static string static_memberstring;
-
-	public void accesses_static_member() {
-		VLib.static_memberstring = "asd";
-		stdout.printf("sms: %s\n", VLib.static_memberstring);
-	}
+//	public static string[] member_string_array;
 }
 
 errordomain IOError {

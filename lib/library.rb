@@ -126,17 +126,10 @@ class Valar
         when /public (\w+ )*([\w\.\?]+) (\w+) \{(.*)\}/
           # property - automatically handled by ruby-glib
         when /public (\w+ )*([\w\.\?\[\]<>]+) (\w+);/
-          p $1
-          p $2
-          p line
           if ($1||"").include? "static"
-            p :staticmember
-            p $3
             memberg = StaticMemberGet.new
             members = StaticMemberSet.new
           else
-            p :nonstaticmember
-            p $3
             memberg = ValaMemberGet.new
             members = ValaMemberSet.new
           end
@@ -161,11 +154,10 @@ class Valar
           while count > 0 and line
             i += 1
             line = lines[i]
-            if line =~ /\{/
-              count += 1
-            elsif line =~ /\}/
-              count -= 1
+            if line
+              change = line.scan(/\{/).length - line.scan(/\}/).length
             end
+            count += change
           end
         when /\}/
           puts "unexpected scope close '#{line.chomp}'"
@@ -180,8 +172,11 @@ class Valar
       max_type_width = @objects.map{ |o|o.functions.map{ |m| m.returns.name.length}}.flatten.max
       max_name_width = @objects.map{ |o|o.functions.map{ |m| m.name.length}}.flatten.max
       @objects.each do |obj|
-        next unless obj.convertible?
         puts "#{obj.vala_typename}"
+        unless obj.convertible?
+          puts "  not convertible"
+          next
+        end
         unless obj.constructor_params.empty?
           c = obj.constructor_params.all? {|p| p.type.forward_convertible? }
           Kernel.print "  #{c ? "*" : "x"} #{" ".ljust(max_type_width)}  #{obj.name.ljust(max_name_width)}  ("

@@ -285,7 +285,8 @@ class Valar
     for (it_#{u1} = 0; it_#{u1} < gee_collection_get_size (GEE_COLLECTION (#{c})); it_#{u1} = it_#{u1} + 1) {
         #{@parameter_type.c_type} i_#{u2 = Valar.uniqid};
         i_#{u2} = #{@parameter_type.g_pointer_to_type} (gee_list_get (GEE_LIST (#{c}), it_#{u1}));
-        VALUE #{@parameter_type.c_to_ruby(:after, "i_"+u2, "rb_i"+u2)}
+        VALUE rb_i#{u2};
+        #{@parameter_type.c_to_ruby(:after, "i_"+u2, "rb_i"+u2)}
         rb_ary_store (#{ruby}, it_#{u1}, rb_i#{u2});
     }
 END
@@ -376,7 +377,16 @@ END
     g_type_to_pointer ""
     g_pointer_to_type "(char *)"
     
-    c_to_ruby { "#{ruby} = rb_str_new2(#{c});" }
+    c_to_ruby do
+      <<-END
+      if (#{c} == NULL) {
+        #{ruby} = Qnil;
+      }
+      else {
+        #{ruby} = rb_str_new2(#{c});
+      }
+      END
+    end
     ruby_to_c { "#{c} = g_strdup(STR2CSTR(#{ruby}));"    }
   end
   

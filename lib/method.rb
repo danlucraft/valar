@@ -115,7 +115,7 @@ END
       else
         if returns.nullable?
           f=<<END
-    VALUE _rb_return;
+    VALUE _rb_return;                                           // Method#return_type_conversion
     if (_c_return == NULL)
         _rb_return = Qnil;
     else {
@@ -124,7 +124,7 @@ END
 END
         else
           f=<<END
-    VALUE _rb_return;
+    VALUE _rb_return;                                       // Method#return_type_conversion
     #{returns.c_to_ruby(:after, "_c_return", "_rb_return")}
 END
         end
@@ -194,11 +194,15 @@ END
     end
     
     def c_arg_list1
-      s1 = params.map do |param| 
-        param.type.args("_c_" + param.name) || "_c_#{param.name}"
-      end.join(", ")
+      s1 = c_arg_list_direct
       s2 = (returns.return_args("_rb_return") || "")
       s1 + (((s1.length > 0 or !static) and s2.length > 0) ? ", " : "") + s2 
+    end
+
+    def c_arg_list_direct
+      params.map do |param| 
+        param.type.args("_c_" + param.name) || "_c_#{param.name}"
+      end.join(", ")
     end
     
     def ctype?(type)

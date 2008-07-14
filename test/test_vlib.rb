@@ -171,6 +171,11 @@ class TestVala < Test::Unit::TestCase
     assert_equal "as", v.memberstring
   end
   
+  def test_string_member_that_is_null
+    v = VLib.new
+    assert_equal nil, v.memberstring
+  end
+
   def test_member_array_list
     v = VLib.new
     v.member_sal = %w(tic tac toe)
@@ -181,4 +186,10 @@ class TestVala < Test::Unit::TestCase
     VLib.static_memberstring = "asdf"
     assert_equal "asdf", VLib.static_memberstring
   end
+
+#   def test_member_string_array
+#     VLib.member_string_array = %w(tic tac toe)
+#     assert_equal %w(tic tac toe), VLib.member_string_array
+#   end
+
 end
