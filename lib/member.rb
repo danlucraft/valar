@@ -21,8 +21,15 @@ class Valar
     
     def body
       f=<<END
-    #{obj.underscore_typename}->#{member} = #{c_arg_list1};  // ValaMemberSet#body
+    // ValaMemberSet#body
+    #{obj.underscore_typename}->#{member} = _c_#{params.first.name};
 END
+      if params.first.type.name.include? "[]"
+        f+=<<END
+    #{obj.underscore_typename}->#{member}_length1 = _c_#{params.first.name}__length;
+END
+      end
+      f
     end
   end
 
@@ -46,20 +53,28 @@ END
     end
     
     def body
-      <<END
-    #{returns.c_type} _c_return = #{obj.underscore_typename}->#{member}; // ValaMemberGet#body
+      f = <<END
+    // ValaMemberGet#body
+    #{returns.c_type} _c_return = #{obj.underscore_typename}->#{member}; 
 END
+      if returns.name.include? "[]"
+        f += <<END
+    gint _rb_return__length = #{obj.underscore_typename}->#{member}_length1;
+END
+      end
+      f
     end
   end
 
   class StaticMemberSet < ValaMemberSet
     def body
       f=<<END
-    #{obj.underscore_typename}_#{member} = #{c_arg_list_direct}; // StaticMemberSet#body
+    // StaticMemberSet#body
+    #{obj.underscore_typename}_#{member} = _c_#{params.first.name}; 
 END
-      if returns.name.include? "[]"
+      if params.first.type.name.include? "[]"
         f+=<<END
-    _rb_return__length = #{obj.underscore_typename}_#{member}_length1;
+    #{obj.underscore_typename}_#{member}_length1 = _c_#{params.first.name}__length;
 END
       end
       f
@@ -72,9 +87,16 @@ END
   
   class StaticMemberGet < ValaMemberGet
     def body
-      <<END
-    #{returns.c_type} _c_return = #{obj.underscore_typename}_#{member}; // StaticMemberGet#body
+      f = <<END
+    // StaticMemberGet#body
+    #{returns.c_type} _c_return = #{obj.underscore_typename}_#{member};
 END
+      if returns.name.include? "[]"
+        f += <<END
+    gint _rb_return__length = #{obj.underscore_typename}_#{member}_length1;
+END
+      end
+      f
     end
 
     def static

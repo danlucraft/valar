@@ -158,6 +158,18 @@ END
 #define _#{underscore_typename.upcase}_SELF(s) #{underscore_typename.upcase}(RVAL2GOBJ(s))
 static VALUE rbc_#{underscore_typename};
 END
+      @functions.each do |func|
+        if func.class == StaticMemberGet
+          fout.puts <<END
+#{func.returns.c_type} #{func.obj.underscore_typename}_#{func.member};
+END
+          if func.returns.name.include? "[]"
+            fout.puts <<END
+gint #{func.obj.underscore_typename}_#{func.member}_length1;
+END
+          end
+        end
+      end
     end
     
     def output_const_definitions(fout)

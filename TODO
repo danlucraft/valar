@@ -1,8 +1,9 @@
 
- o ArrayList<string> to Ruby.
- o fix dependencies
+ o all types should check for NULL and return nil if so.
+ o fix string[] to free strings when returning from functions
+ o HashMap<string/int, type>
+ o dependencies to use .deps file
  o fix construction
- o complex type conversions
  o iterators for array
  o Make use of the faster type checks FIXNUM_P.
  o Data members can be nullable
@@ -11,6 +12,8 @@
    so learn about that.
  o Convert Structs.
 
+ x fix string[] members
+ x ArrayList<string> to Ruby.
  x constants
  x unichar conversions
  x signals

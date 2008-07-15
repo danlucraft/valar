@@ -280,6 +280,7 @@ class Valar
         nil
       when :after
       <<END
+    // ArrayListType#c_to_ruby(#{where.inspect}, #{c.inspect}, #{ruby.inspect})
     int it_#{u1 = Valar.uniqid};
     #{ruby} = rb_ary_new2((long) gee_collection_get_size (GEE_COLLECTION (#{c})));
     for (it_#{u1} = 0; it_#{u1} < gee_collection_get_size (GEE_COLLECTION (#{c})); it_#{u1} = it_#{u1} + 1) {
@@ -304,6 +305,7 @@ END
           unref_func = @parameter_type.unref_func
         end
         <<END
+    // ArrayListType#ruby_to_c(#{where.inspect}, #{ruby.inspect}, #{c.inspect})
     int len_#{u1=Valar.uniqid} = RARRAY_LEN(#{ruby});
     _c_#{ruby} = gee_array_list_new (#{@parameter_type.g_type}, #{ref_func}, #{unref_func}, g_direct_equal);
     {
@@ -432,7 +434,7 @@ END
     
     ruby_to_c(:before) do
       <<-END
-          int #{c}__length = RARRAY_LEN(#{ruby});
+          gint #{c}__length = RARRAY_LEN(#{ruby});
           #{c} = malloc(#{c}__length*sizeof(char*));
           long #{u1=Valar.uniqid};
           for(#{u1} = 0; #{u1} < #{c}__length; #{u1}++) {
@@ -445,7 +447,7 @@ END
     
     c_to_ruby(:before) do 
       <<-END
-          int #{ruby}__length;
+          gint #{ruby}__length;
       END
     end
 
@@ -457,7 +459,7 @@ END
           long #{u1=Valar.uniqid};
           for(#{u1} = 0; #{u1} < #{ruby}__length; #{u1}++) {
               rb_ary_store(#{ruby}, #{u1}, rb_str_new2(#{c}[#{u1}]));
-              g_free(#{c}[#{u1}]);
+//              g_free(#{c}[#{u1}]);
           }
       END
     end
@@ -471,7 +473,7 @@ END
     
     ruby_to_c(:before) do
       <<-END
-          int #{c}__length = RARRAY_LEN(#{ruby});
+          gint #{c}__length = RARRAY_LEN(#{ruby});
           #{c} = malloc(#{c}__length*sizeof(gint));
           long #{u1=Valar.uniqid};
           for(#{u1} = 0; #{u1} < #{c}__length; #{u1}++) {
@@ -484,7 +486,7 @@ END
     
     c_to_ruby(:before) do 
       <<-END
-          int #{ruby}__length;
+          gint #{ruby}__length;
       END
     end
 

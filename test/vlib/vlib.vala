@@ -195,8 +195,9 @@ public class VLib : Object {
 	public int memberint;
 	public string memberstring;
 	public ArrayList<string> member_sal;
+	public string[] member_string_array;
 	public static string static_memberstring;
-//	public static string[] member_string_array;
+	public static string[] static_member_string_array;
 }
 
 errordomain IOError {

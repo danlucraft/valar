@@ -187,9 +187,18 @@ class TestVala < Test::Unit::TestCase
     assert_equal "asdf", VLib.static_memberstring
   end
 
-#   def test_member_string_array
-#     VLib.member_string_array = %w(tic tac toe)
-#     assert_equal %w(tic tac toe), VLib.member_string_array
-#   end
+  def test_static_member_string_array
+    VLib.static_member_string_array = %w(tic tac toe)
+    assert_equal %w(tic tac toe), VLib.static_member_string_array
+  end
+
+  def test_member_string_array
+    v = VLib.new
+    v.member_string_array = %w(tic tac toe)
+    assert_equal %w(tic tac toe), v.member_string_array
+    # checking for bug:
+    assert_equal %w(tic tac toe), v.member_string_array
+    assert_equal %w(tic tac toe), v.member_string_array
+  end
 
 end

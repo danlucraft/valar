@@ -58,7 +58,7 @@ END
     end
     
     def type_checks
-      str = ""
+      str = "    // Method#type_checks\n"
       params.each do |param|
         type = param.type
         varname = param.name
@@ -87,7 +87,7 @@ END
     end
     
     def argument_type_conversions
-      str = ""
+      str = "    // Method#argument_type_conversions\n"
       params.each do |param|
         type, varname = param.type, param.name
         if type.nullable?
@@ -110,12 +110,13 @@ END
     end
     
     def return_type_conversion
+      str = "    // Method#return_type_conversion\n"
       if returns.name == "void"
-        ""
+        str
       else
         if returns.nullable?
-          f=<<END
-    VALUE _rb_return;                                           // Method#return_type_conversion
+          str << f=<<END
+    VALUE _rb_return;
     if (_c_return == NULL)
         _rb_return = Qnil;
     else {
@@ -123,8 +124,8 @@ END
     }
 END
         else
-          f=<<END
-    VALUE _rb_return;                                       // Method#return_type_conversion
+          str << f=<<END
+    VALUE _rb_return; 
     #{returns.c_to_ruby(:after, "_c_return", "_rb_return")}
 END
         end
@@ -132,7 +133,7 @@ END
     end
     
     def body
-      f=""
+      f="    // Method#body\n"
       if throws.any?
         f << <<END
     GError* inner_error;
