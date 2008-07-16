@@ -102,7 +102,7 @@ class Valar
               current_obj.constructor_params << Param.new(type_def, arg_name)
             end
           end
-        when /public (\w+ )*([\w\.\?\[\]<>]+) (\w+) \((.*)\)( throws ((\w+)(, \w+)*))?;/
+        when /public (\w+ )*([\w\.\?\[\]<>,]+) (\w+) \((.*)\)( throws ((\w+)(, \w+)*))?;/
           unless $1 and $1.include? "signal"
             keywords, return_type, name = $1, $2, $3
             params, errors =  $4, ($6 ? $6.split(", ") : [])
@@ -125,7 +125,7 @@ class Valar
           current_obj.constants << new_const
         when /public (\w+ )*([\w\.\?]+) (\w+) \{(.*)\}/
           # property - automatically handled by ruby-glib
-        when /public (\w+ )*([\w\.\?\[\]<>]+) (\w+);/
+        when /public (\w+ )*([\w\.\?\[\]<>,]+) (\w+);/
           if ($1||"").include? "static"
             memberg = StaticMemberGet.new
             members = StaticMemberSet.new

@@ -205,4 +205,31 @@ class TestVala < Test::Unit::TestCase
     assert_equal %w(tic tac toe), v.member_string_array
   end
 
+  def test_hashmap_string_int
+    v = VLib.new
+    assert_nil v.hashmap_string_int
+    v.hashmap_string_int = {"a" => 1, "b" => 2}
+    assert_equal({"a" => 1, "b" => 2}, v.hashmap_string_int)
+  end
+
+  def test_hashmap_string_string
+    v = VLib.new
+    assert_nil v.hashmap_string_string
+    v.hashmap_string_string = {"a" => "asp", "b" => "bison"}
+    assert_equal({"a" => "asp", "b" => "bison"}, v.hashmap_string_string)
+  end
+
+  def test_hashmap_string_obj
+    v = VLib.new
+    assert_nil v.hashmap_string_obj
+    v.hashmap_string_obj = {"a" => VLib.new, "b" => VLib.new}
+    assert_equal(["a", "b"], v.hashmap_string_obj.keys)
+  end
+
+  def test_hashmap_string_al_int
+    v = VLib.new
+    assert_nil v.hashmap_string_al_int
+    v.hashmap_string_al_int = {"a" => [1, 2, 3], "b" => [4, 5, 6]}
+    assert_equal({"a" => [1, 2, 3], "b" => [4, 5, 6]}, v.hashmap_string_al_int)
+  end
 end

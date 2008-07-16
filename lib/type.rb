@@ -165,8 +165,12 @@ class Valar
     def self.parse(string)
       if string.include? "<"
         case string
-        when /Gee.ArrayList<(.*)>/
+        when /^Gee.ArrayList<(.*)>/
           type = ArrayListType.new(parse($1))
+          type.name = string
+          return ValaTypeInstance.new(type, false)
+        when /^Gee.HashMap<(.*), ?(.*)>/
+          type = HashMapType.new(parse($1), parse($2))
           type.name = string
           return ValaTypeInstance.new(type, false)
         end
@@ -320,6 +324,110 @@ END
             VALUE _rb_el = rb_ary_entry(#{ruby}, (long) i);
             #{@parameter_type.c_type} #{@parameter_type.ruby_to_c(:before, "_rb_el", "_c_el")}
             gee_collection_add (GEE_COLLECTION (_c_#{ruby}), #{@parameter_type.g_type_to_pointer}(_c_el));
+        }
+    }
+END
+      when :after
+        nil
+      end
+    end
+  end
+  
+  class HashMapType < ValaType
+    def initialize(key_type, value_type)
+      @key_type, @value_type = key_type, value_type
+    end
+    
+    def forward_convertible?
+      [@key_type, @value_type].all? {|t| t.forward_convertible?}
+    end
+    
+    def backward_convertible?
+      [@key_type, @value_type].all? {|t| t.backward_convertible?}
+    end
+    
+    def c_type
+      "GeeHashMap*"
+    end
+    
+    def ruby_type
+      "Hash"
+    end
+
+    def ruby_type_check 
+      return ["T_HASH"], "expected a hash"
+    end
+    
+    def c_to_ruby(where, c, ruby)
+      case where
+      when :before
+        nil
+      when :after
+      <<END
+    // HashMap#c_to_ruby(#{where.inspect}, #{c.inspect}, #{ruby.inspect})
+    if (#{c} == NULL) {
+        #{ruby} = Qnil;
+    }
+    else {
+        #{ruby} = rb_hash_new();
+        GeeSet* s_collection;
+        GeeIterator* s_it;
+        s_collection = gee_map_get_keys (GEE_MAP (#{c}));
+        s_it = gee_iterable_iterator (GEE_ITERABLE (s_collection));
+        while (gee_iterator_next (s_it)) {
+            #{@key_type.c_type} s;
+            s = ((#{@key_type.c_type}) (gee_iterator_get (s_it)));
+            {
+                #{@value_type.c_type} v;
+                v = GPOINTER_TO_INT (GPOINTER_TO_INT (gee_map_get (GEE_MAP (#{c}), s)));
+                VALUE rb_s;
+                #{@key_type.c_to_ruby(:after, "s", "rb_s")}
+                VALUE rb_v;
+                #{@value_type.c_to_ruby(:after, "v", "rb_v")}
+                rb_hash_aset(#{ruby}, rb_s, rb_v);
+//                s = (g_free (s), NULL);
+            }
+        }
+        (s_it == NULL ? NULL : (s_it = (g_object_unref (s_it), NULL)));
+        (s_collection == NULL ? NULL : (s_collection = (g_object_unref (s_collection), NULL)));
+    }
+END
+      end
+    end
+    
+    def ruby_to_c(where, ruby, c)
+      case where
+      when :before
+        if Valar.defined_object?(@key_type.name)
+          key_ref_func = "((GBoxedCopyFunc) (g_object_ref))"
+          key_unref_func = "g_object_unref"
+        else
+          key_ref_func = @key_type.ref_func
+          key_unref_func = @key_type.unref_func
+        end
+        if Valar.defined_object?(@value_type.name)
+          value_ref_func = "((GBoxedCopyFunc) (g_object_ref))"
+          value_unref_func = "g_object_unref"
+        else
+          value_ref_func = @value_type.ref_func
+          value_unref_func = @value_type.unref_func
+        end
+        <<END
+    // HashMap#ruby_to_c(#{where.inspect}, #{ruby.inspect}, #{c.inspect})
+    _c_#{ruby} = gee_hash_map_new (#{@key_type.g_type}, #{key_ref_func}, #{key_unref_func}, #{@value_type.g_type}, #{value_ref_func}, #{value_unref_func}, g_str_hash, g_str_equal, g_direct_equal);
+    VALUE rb_keys = rb_funcall(#{ruby}, rb_intern("keys"), 0);
+    int len_#{u1=Valar.uniqid} = RARRAY_LEN(rb_keys);
+    {
+        gint i;
+        i = 0;
+        for (; i < len_#{u1}; i++) {
+            VALUE _rb_key = rb_ary_entry(rb_keys, (long) i);
+            VALUE _rb_value = rb_hash_aref(#{ruby}, _rb_key);
+            #{@key_type.c_type} _c_key;
+            #{@key_type.ruby_to_c(:before, "_rb_key", "_c_key")}
+            #{@value_type.c_type} _c_value;
+            #{@value_type.ruby_to_c(:before, "_rb_value", "_c_value")}
+            gee_map_set (GEE_MAP (_c_#{ruby}), _c_key, #{@value_type.g_type_to_pointer} (_c_value));
         }
     }
 END

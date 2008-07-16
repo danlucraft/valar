@@ -198,6 +198,19 @@ public class VLib : Object {
 	public string[] member_string_array;
 	public static string static_memberstring;
 	public static string[] static_member_string_array;
+	public HashMap<string, int> hashmap_string_int;
+	public HashMap<string, string> hashmap_string_string;
+	public HashMap<string, VLib> hashmap_string_obj;
+	public HashMap<string, ArrayList<int>> hashmap_string_al_int;
+	
+	public void foo() {
+		this.hashmap_string_int = new HashMap<string, int>(str_hash, str_equal);
+		this.hashmap_string_int.set("foo", 10);
+		this.hashmap_string_int.set("bar", 24);
+		foreach(string s in this.hashmap_string_int.get_keys()) {
+			stdout.printf("%s: %d\n", s, this.hashmap_string_int.get(s));
+		}
+	}
 }
 
 errordomain IOError {
