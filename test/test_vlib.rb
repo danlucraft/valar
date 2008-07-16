@@ -178,22 +178,26 @@ class TestVala < Test::Unit::TestCase
 
   def test_member_array_list
     v = VLib.new
+    assert_nil v.member_sal
     v.member_sal = %w(tic tac toe)
     assert_equal %w(tic tac toe), v.member_sal
   end
   
   def test_static_member_string
+    assert_nil VLib.static_memberstring
     VLib.static_memberstring = "asdf"
     assert_equal "asdf", VLib.static_memberstring
   end
 
   def test_static_member_string_array
+    assert_nil VLib.static_member_string_array
     VLib.static_member_string_array = %w(tic tac toe)
     assert_equal %w(tic tac toe), VLib.static_member_string_array
   end
 
   def test_member_string_array
     v = VLib.new
+    assert_nil v.member_string_array
     v.member_string_array = %w(tic tac toe)
     assert_equal %w(tic tac toe), v.member_string_array
     # checking for bug:

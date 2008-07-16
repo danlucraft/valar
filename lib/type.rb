@@ -281,14 +281,19 @@ class Valar
       when :after
       <<END
     // ArrayListType#c_to_ruby(#{where.inspect}, #{c.inspect}, #{ruby.inspect})
-    int it_#{u1 = Valar.uniqid};
-    #{ruby} = rb_ary_new2((long) gee_collection_get_size (GEE_COLLECTION (#{c})));
-    for (it_#{u1} = 0; it_#{u1} < gee_collection_get_size (GEE_COLLECTION (#{c})); it_#{u1} = it_#{u1} + 1) {
-        #{@parameter_type.c_type} i_#{u2 = Valar.uniqid};
-        i_#{u2} = #{@parameter_type.g_pointer_to_type} (gee_list_get (GEE_LIST (#{c}), it_#{u1}));
-        VALUE rb_i#{u2};
-        #{@parameter_type.c_to_ruby(:after, "i_"+u2, "rb_i"+u2)}
-        rb_ary_store (#{ruby}, it_#{u1}, rb_i#{u2});
+    if (#{c} == NULL) {
+        #{ruby} = Qnil;
+    }
+    else {
+        int it_#{u1 = Valar.uniqid};
+        #{ruby} = rb_ary_new2((long) gee_collection_get_size (GEE_COLLECTION (#{c})));
+        for (it_#{u1} = 0; it_#{u1} < gee_collection_get_size (GEE_COLLECTION (#{c})); it_#{u1} = it_#{u1} + 1) {
+            #{@parameter_type.c_type} i_#{u2 = Valar.uniqid};
+            i_#{u2} = #{@parameter_type.g_pointer_to_type} (gee_list_get (GEE_LIST (#{c}), it_#{u1}));
+            VALUE rb_i#{u2};
+            #{@parameter_type.c_to_ruby(:after, "i_"+u2, "rb_i"+u2)}
+            rb_ary_store (#{ruby}, it_#{u1}, rb_i#{u2});
+        }
     }
 END
       end
@@ -455,11 +460,16 @@ END
     
     c_to_ruby(:after) do
       <<-END
-          #{ruby} = rb_ary_new2(#{ruby}__length);
-          long #{u1=Valar.uniqid};
-          for(#{u1} = 0; #{u1} < #{ruby}__length; #{u1}++) {
-              rb_ary_store(#{ruby}, #{u1}, rb_str_new2(#{c}[#{u1}]));
-//              g_free(#{c}[#{u1}]);
+          if (#{c} == NULL) {
+              #{ruby} = Qnil;
+          }
+          else {
+              #{ruby} = rb_ary_new2(#{ruby}__length);
+              long #{u1=Valar.uniqid};
+              for(#{u1} = 0; #{u1} < #{ruby}__length; #{u1}++) {
+                  rb_ary_store(#{ruby}, #{u1}, rb_str_new2(#{c}[#{u1}]));
+//                g_free(#{c}[#{u1}]);
+              }
           }
       END
     end
