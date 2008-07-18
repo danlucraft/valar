@@ -204,11 +204,11 @@ public class VLib : Object {
 	public HashMap<string, ArrayList<int>> hashmap_string_al_int;
 	
 	public void foo() {
-		this.hashmap_string_int = new HashMap<string, int>(str_hash, str_equal);
-		this.hashmap_string_int.set("foo", 10);
-		this.hashmap_string_int.set("bar", 24);
-		foreach(string s in this.hashmap_string_int.get_keys()) {
-			stdout.printf("%s: %d\n", s, this.hashmap_string_int.get(s));
+		this.hashmap_string_al_int = new HashMap<string, ArrayList<int>>(str_hash, str_equal);
+		this.hashmap_string_al_int.set("foo", new ArrayList<int>());
+		this.hashmap_string_al_int.set("bar", new ArrayList<int>());
+		foreach(string s in this.hashmap_string_al_int.get_keys()) {
+			stdout.printf("%s: %d\n", s, this.hashmap_string_al_int.get(s).size);
 		}
 	}
 }

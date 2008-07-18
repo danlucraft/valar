@@ -269,6 +269,18 @@ class Valar
     def c_type
       "GeeArrayList*"
     end
+
+    def g_type
+      "GEE_TYPE_ARRAY_LIST"
+    end
+
+    def ref_func
+      "((GBoxedCopyFunc) (g_object_ref))"
+    end
+
+    def unref_func
+      "g_object_unref"
+    end
     
     def ruby_type
       "Array"
@@ -379,7 +391,7 @@ END
             s = ((#{@key_type.c_type}) (gee_iterator_get (s_it)));
             {
                 #{@value_type.c_type} v;
-                v = GPOINTER_TO_INT (GPOINTER_TO_INT (gee_map_get (GEE_MAP (#{c}), s)));
+                v = #{@value_type.g_pointer_to_type} (#{@value_type.g_pointer_to_type} (gee_map_get (GEE_MAP (#{c}), s)));
                 VALUE rb_s;
                 #{@key_type.c_to_ruby(:after, "s", "rb_s")}
                 VALUE rb_v;
@@ -423,11 +435,11 @@ END
         for (; i < len_#{u1}; i++) {
             VALUE _rb_key = rb_ary_entry(rb_keys, (long) i);
             VALUE _rb_value = rb_hash_aref(#{ruby}, _rb_key);
-            #{@key_type.c_type} _c_key;
-            #{@key_type.ruby_to_c(:before, "_rb_key", "_c_key")}
-            #{@value_type.c_type} _c_value;
-            #{@value_type.ruby_to_c(:before, "_rb_value", "_c_value")}
-            gee_map_set (GEE_MAP (_c_#{ruby}), _c_key, #{@value_type.g_type_to_pointer} (_c_value));
+            #{@key_type.c_type} _c__rb_key;
+            #{@key_type.ruby_to_c(:before, "_rb_key", "_c__rb_key")}
+            #{@value_type.c_type} _c__rb_value;
+            #{@value_type.ruby_to_c(:before, "_rb_value", "_c__rb_value")}
+            gee_map_set (GEE_MAP (_c_#{ruby}), _c__rb_key, #{@value_type.g_type_to_pointer} (_c__rb_value));
         }
     }
 END
