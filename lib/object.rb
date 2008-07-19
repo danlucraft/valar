@@ -59,7 +59,7 @@ class Valar
     
     def g_typename
       if outer_object
-        outer_object.underscore_typename.upcase + "_TYPE_" + name.upcase
+        outer_object.underscore_typename.upcase + "_TYPE_" + name.underscore.upcase
       else
         "TYPE_"+name.upcase
       end
