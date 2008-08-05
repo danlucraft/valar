@@ -72,7 +72,7 @@ class Valar
             line = lines[i]
           end
           current_obj.enums << new_enum
-        when /public class (\w+)( : ([\w\.]+)((, ([\w\.]+))*)?)? \{/
+        when /public class (\w+)( : ([\w\.]+)((, ([\w\.<>]+))*)?)? \{/
           new_obj = ValaObject.new
           new_obj.name = $1
           new_obj.outer_object = current_obj
