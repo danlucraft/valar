@@ -47,6 +47,8 @@ class Valar
     deps.each do |dep|
       if File.exist? "/usr/local/share/vala/vapi/#{dep}.vapi"
         parse_vapi_file("/usr/local/share/vala/vapi/#{dep}.vapi")
+      elsif File.exist? "/usr/share/vala/vapi/#{dep}.vapi"
+        parse_vapi_file("/usr/share/vala/vapi/#{dep}.vapi")
       else
         options[:vapidirs].split(",").each do |vdir|
           if File.exist? vdir+"/#{dep}.vapi"
