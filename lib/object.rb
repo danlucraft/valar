@@ -250,7 +250,7 @@ class String
   def errorcase
     self.gsub(/([a-z\d])([A-Z])/,'\1_\2').
       gsub(/([A-Z][A-Z])([A-Z])/,'\1_\2').
-      tr("-", "_").
-      upcase
+      tr("-", "_").tr(".", "_").
+      upcase.gsub("GLIB_", "G_")
   end
 end
